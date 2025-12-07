@@ -15,17 +15,17 @@
   - [x] shared.mts 작성
   - [x] package.json 작성
 
-- [ ] 1-3. 첫 번째 주제 (frontend-writing) 구축
-  - [ ] package.json 생성
-  - [ ] .vitepress/config.mts 작성
-  - [ ] index.md 작성
-  - [ ] basic-concepts/index.md 작성
-  - [ ] practical-cases/index.md 작성
-  - [ ] 로컬 개발 서버 실행 확인
+- [x] 1-3. 첫 번째 주제 (frontend-writing) 구축
+  - [x] package.json 생성
+  - [x] .vitepress/config.mts 작성
+  - [x] index.md 작성
+  - [x] basic-concepts/index.md 작성
+  - [x] practical-cases/index.md 작성
+  - [x] 로컬 개발 서버 실행 확인
 
-- [ ] 1-4. TypeScript 설정
-  - [ ] tsconfig.json 생성
-  - [ ] 타입 에러 확인
+- [x] 1-4. TypeScript 설정
+  - [x] tsconfig.json 생성
+  - [x] 타입 에러 확인
 
 **검증**: `pnpm dev:frontend` 실행하여 http://localhost:5173/frontend-writing/ 정상 작동
 
@@ -90,12 +90,13 @@
 
 ## 🚧 현재 작업 중
 
-Phase 1-2 완료 ✅
-- shared/vitepress-config 패키지 생성
-- 한국어 localization 설정 (검색, 내비게이션, 다크모드 등)
-- mergeConfig 헬퍼 함수 제공
+Phase 1 완료 ✅
+- frontend-writing 주제 구축 완료
+- 로컬 개발 서버 정상 실행 (http://localhost:5173/frontend-writing/)
+- 홈, 기본 개념, 실전 사례 페이지 생성
+- TypeScript 설정 완료
 
-다음: Phase 1-3 - 첫 번째 주제 (frontend-writing) 구축
+다음: Git 커밋 후 Phase 2 - work-notes 주제 추가
 
 ---
 
@@ -106,6 +107,10 @@ Phase 1-2 완료 ✅
 
 ### 해결 필요
 - (아직 해결하지 못한 문제)
+
+### 해결된 이슈
+- `.mts` 파일 import 오류: TypeScript 타입 어노테이션을 제거하고 `.js` 파일로 변경하여 해결
+- 공통 설정 파일: `shared/vitepress-config/shared.js`로 통일
 
 ### 중요한 결정사항
 - 영문 슬러그 사용 (/frontend-writing/, /work-notes/)

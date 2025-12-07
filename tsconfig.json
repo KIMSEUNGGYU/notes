@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "types": ["node"],
+    "paths": {
+      "shared-vitepress-config": ["./shared/vitepress-config/shared.mts"]
+    }
+  },
+  "include": [
+    "docs/**/*.ts",
+    "docs/**/*.mts",
+    "docs/**/*.vue",
+    "docs/**/*.md",
+    "shared/**/*.ts",
+    "shared/**/*.mts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/dist",
+    "**/.vitepress/cache"
+  ]
+}

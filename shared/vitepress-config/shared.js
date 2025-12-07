@@ -60,7 +60,7 @@ export const sharedConfig = defineConfig({
   lastUpdated: true
 })
 
-export function mergeConfig(override: any) {
+export function mergeConfig(override) {
   return defineConfig({
     ...sharedConfig,
     ...override,
