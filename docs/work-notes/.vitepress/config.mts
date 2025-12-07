@@ -52,7 +52,7 @@ export default mergeConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/yourusername/notes' }
+      { icon: 'github', link: 'https://github.com/kimseunggyu/notes' }
     ]
   }
 })

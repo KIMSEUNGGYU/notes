@@ -14,9 +14,8 @@
             viewBox="0 0 24 24"
             fill="currentColor"
             class="nav-icon"
-          >
-            <path :d="item.icon" />
-          </svg>
+            v-html="item.icon"
+          />
         </a>
       </div>
     </div>
