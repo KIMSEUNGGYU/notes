@@ -1,0 +1,10 @@
+{
+  "name": "shared-vitepress-config",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./shared.mts",
+  "type": "module",
+  "peerDependencies": {
+    "vitepress": "^1.0.0"
+  }
+}

@@ -10,10 +10,10 @@
   - [x] .gitignore 생성
   - [x] 의존성 설치 확인
 
-- [ ] 1-2. 공통 설정 패키지 생성
-  - [ ] shared/vitepress-config/ 폴더 생성
-  - [ ] shared.mts 작성
-  - [ ] package.json 작성
+- [x] 1-2. 공통 설정 패키지 생성
+  - [x] shared/vitepress-config/ 폴더 생성
+  - [x] shared.mts 작성
+  - [x] package.json 작성
 
 - [ ] 1-3. 첫 번째 주제 (frontend-writing) 구축
   - [ ] package.json 생성
@@ -90,11 +90,12 @@
 
 ## 🚧 현재 작업 중
 
-Phase 1-1 완료 ✅
-- pnpm 워크스페이스 설정 완료
-- VitePress, Vue, TypeScript 설치 완료 (vitepress 1.6.4, vue 3.5.25, typescript 5.9.3)
+Phase 1-2 완료 ✅
+- shared/vitepress-config 패키지 생성
+- 한국어 localization 설정 (검색, 내비게이션, 다크모드 등)
+- mergeConfig 헬퍼 함수 제공
 
-다음: Phase 1-2 - 공통 설정 패키지 생성
+다음: Phase 1-3 - 첫 번째 주제 (frontend-writing) 구축
 
 ---
 
