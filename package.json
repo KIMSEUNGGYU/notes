@@ -1,12 +1,21 @@
 {
   "name": "notes",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "description": "프론트엔드 개발 지식 및 업무 경험 문서",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev:frontend": "pnpm --filter frontend-writing dev",
+    "build:frontend": "pnpm --filter frontend-writing build",
+    "preview:frontend": "pnpm --filter frontend-writing preview",
+    "build": "node scripts/build.mjs"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "devDependencies": {
+    "vitepress": "^1.0.0",
+    "vue": "^3.4.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
 }
