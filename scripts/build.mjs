@@ -2,7 +2,7 @@ import { execSync } from 'child_process'
 import { existsSync, mkdirSync, cpSync, copyFileSync } from 'fs'
 import { join } from 'path'
 
-const workspaces = ['frontend-writing', 'work-notes']
+const workspaces = ['best-practices', 'work-notes']
 
 console.log('🚀 통합 빌드를 시작합니다...\n')
 
@@ -49,6 +49,6 @@ if (existsSync(publicIndexPath)) {
 console.log('\n✨ 빌드 완료!')
 console.log(`\n📂 빌드 결과: ${distDir}/`)
 console.log('   ├── index.html (루트 랜딩 페이지)')
-console.log('   ├── frontend-writing/')
+console.log('   ├── best-practices/')
 console.log('   └── work-notes/')
 console.log('\n💡 로컬 프리뷰: npx serve dist')

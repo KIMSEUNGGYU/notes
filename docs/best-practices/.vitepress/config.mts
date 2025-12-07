@@ -1,15 +1,15 @@
 import { mergeConfig } from 'shared-vitepress-config/shared.js'
 
 export default mergeConfig({
-  title: '프론트엔드 글쓰기',
-  description: '개발자를 위한 효과적인 글쓰기 가이드',
+  title: '프론트엔드 베스트 프랙티스',
+  description: '변경하기 쉬운 프론트엔드 코드를 위한 지침서',
 
-  base: '/frontend-writing/',
+  base: '/best-practices/',
   outDir: '.vitepress/dist',
   srcDir: '.',
 
   themeConfig: {
-    siteTitle: '프론트엔드 글쓰기',
+    siteTitle: '프론트엔드 베스트 프랙티스',
 
     nav: [
       { text: '홈', link: '/' },

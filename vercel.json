@@ -2,13 +2,13 @@
   "rewrites": [
     {
       "source": "/",
-      "destination": "/frontend-writing/"
+      "destination": "/best-practices/"
     }
   ],
   "redirects": [
     {
       "source": "/",
-      "destination": "/frontend-writing/",
+      "destination": "/best-practices/",
       "permanent": false
     }
   ],
