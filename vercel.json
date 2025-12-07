@@ -1,0 +1,18 @@
+{
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/frontend-writing/"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/frontend-writing/",
+      "permanent": false
+    }
+  ],
+  "buildCommand": "pnpm build",
+  "outputDirectory": "dist",
+  "installCommand": "pnpm install"
+}

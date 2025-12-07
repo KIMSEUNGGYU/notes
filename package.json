@@ -10,7 +10,8 @@
     "build:work": "pnpm --filter work-notes build",
     "preview:frontend": "pnpm --filter frontend-writing preview",
     "preview:work": "pnpm --filter work-notes preview",
-    "build": "node scripts/build.mjs"
+    "build": "node scripts/build.mjs",
+    "preview": "npx serve dist"
   },
   "devDependencies": {
     "vitepress": "^1.0.0",
