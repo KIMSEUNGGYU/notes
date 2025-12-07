@@ -24,6 +24,12 @@ importers:
         specifier: workspace:*
         version: link:../../shared/vitepress-config
 
+  docs/work-notes:
+    dependencies:
+      shared-vitepress-config:
+        specifier: workspace:*
+        version: link:../../shared/vitepress-config
+
   shared/vitepress-config:
     dependencies:
       vitepress:

@@ -33,14 +33,14 @@
 
 ## 📋 Phase 2: 두 번째 주제 추가
 
-- [ ] 2-1. work-notes 워크스페이스 생성
-  - [ ] package.json 생성
-  - [ ] .vitepress/config.mts 작성
-  - [ ] index.md 및 카테고리 페이지 작성
+- [x] 2-1. work-notes 워크스페이스 생성
+  - [x] package.json 생성
+  - [x] .vitepress/config.mts 작성
+  - [x] index.md 및 카테고리 페이지 작성
 
-- [ ] 2-2. 루트 package.json 스크립트 업데이트
+- [x] 2-2. 루트 package.json 스크립트 업데이트
 
-**검증**: `pnpm dev:work` 실행하여 http://localhost:5173/work-notes/ 정상 작동
+**검증**: `pnpm dev:work` 실행하여 http://localhost:5173/work-notes/ 정상 작동 ✅
 
 ---
 
@@ -90,13 +90,13 @@
 
 ## 🚧 현재 작업 중
 
-Phase 1 완료 ✅
-- frontend-writing 주제 구축 완료
-- 로컬 개발 서버 정상 실행 (http://localhost:5173/frontend-writing/)
-- 홈, 기본 개념, 실전 사례 페이지 생성
-- TypeScript 설정 완료
+Phase 2 완료 ✅
+- work-notes 주제 구축 완료
+- 로컬 개발 서버 정상 실행 (http://localhost:5173/work-notes/)
+- 홈, 이슈 모음, 폼 관리, 인프라 페이지 생성
+- 루트 package.json 스크립트 업데이트 (dev:work, build:work, preview:work 추가)
 
-다음: Git 커밋 후 Phase 2 - work-notes 주제 추가
+다음: Phase 3 - 통합 빌드 시스템 구축
 
 ---
 
