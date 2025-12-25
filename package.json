@@ -14,9 +14,10 @@
     "preview": "npx serve dist"
   },
   "devDependencies": {
+    "@types/node": "^25.0.3",
+    "typescript": "catalog:",
     "vitepress": "catalog:",
-    "vue": "catalog:",
-    "typescript": "catalog:"
+    "vue": "catalog:"
   },
   "engines": {
     "node": ">=18.0.0",
