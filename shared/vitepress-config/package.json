@@ -5,6 +5,6 @@
   "main": "./shared.js",
   "type": "module",
   "peerDependencies": {
-    "vitepress": "^1.0.0"
+    "vitepress": "catalog:"
   }
 }
