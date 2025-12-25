@@ -5,10 +5,10 @@ import OneNavigation from '../../../../shared/components/components/OneNavigatio
 import './custom.css'
 
 export default {
-  extends: DefaultTheme,
+  extends: DefaultTheme, // ⭐ 기본 테마 확장
   Layout() {
     return h(DefaultTheme.Layout, null, {
-      'layout-top': () => h(OneNavigation)
+      'layout-top': () => h(OneNavigation) // ⭐ 슬롯에 컴포넌트 삽입
     })
   }
 } satisfies Theme

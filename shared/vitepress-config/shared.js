@@ -4,6 +4,7 @@ export const sharedConfig = defineConfig({
   lang: 'ko-KR',
 
   themeConfig: {
+    // 검색 기능 
     search: {
       provider: 'local',
       options: {
@@ -28,12 +29,12 @@ export const sharedConfig = defineConfig({
         }
       }
     },
-
+    // 목차 (Table of Contents)
     outline: {
       level: [2, 3],
       label: '목차'
     },
-
+    // 문서 하단
     docFooter: {
       prev: '이전',
       next: '다음'
