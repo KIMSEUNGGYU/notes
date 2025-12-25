@@ -1,7 +1,17 @@
 import { defineConfig } from 'vitepress'
 
+// 프로덕션 환경 체크
+const isProduction = process.env.NODE_ENV === 'production'
+
 export const sharedConfig = defineConfig({
   lang: 'ko-KR',
+
+  // 프로덕션에서 draft 페이지 제외
+  transformPageData(pageData) {
+    if (isProduction && pageData.frontmatter.draft) {
+      return { ...pageData, frontmatter: { ...pageData.frontmatter, layout: false } }
+    }
+  },
 
   themeConfig: {
     // 검색 기능
