@@ -4,12 +4,12 @@
   "private": true,
   "description": "프론트엔드 개발 지식 및 업무 경험 문서",
   "scripts": {
-    "dev:frontend": "pnpm --filter best-practices dev",
-    "dev:work": "pnpm --filter work-notes dev",
-    "build:frontend": "pnpm --filter best-practices build",
-    "build:work": "pnpm --filter work-notes build",
-    "preview:frontend": "pnpm --filter best-practices preview",
-    "preview:work": "pnpm --filter work-notes preview",
+    "docs:best-practices:dev": "pnpm --filter best-practices dev",
+    "docs:best-practices:build": "pnpm --filter best-practices build",
+    "docs:best-practices:preview": "pnpm --filter best-practices preview",
+    "docs:work:dev": "pnpm --filter work-notes dev",
+    "docs:work:build": "pnpm --filter work-notes build",
+    "docs:work:preview": "pnpm --filter work-notes preview",
     "build": "node scripts/build.mjs",
     "preview": "npx serve dist"
   },
