@@ -9,7 +9,7 @@ hero:
   actions:
     - theme: brand
       text: 시작하기
-      link: /basic-concepts/
+      link: /introduce/
     - theme: alt
       text: 실전 사례
       link: /practical-cases/

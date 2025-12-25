@@ -19,7 +19,7 @@ export default mergeConfig({
       {
         text: '시작하기',
         items: [
-          { text: '소개', link: '/introduce' },
+          { text: '소개', link: '/introduce/' },
           { text: '핵심 철학', link: '/philosophy/' }
         ]
       },
