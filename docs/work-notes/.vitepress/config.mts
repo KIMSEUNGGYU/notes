@@ -1,4 +1,4 @@
-import { mergeConfig } from 'shared-vitepress-config/shared.js'
+import { mergeConfig } from './config/shared'
 
 export default mergeConfig({
   title: '업무 노트',

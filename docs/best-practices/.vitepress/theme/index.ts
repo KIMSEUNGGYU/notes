@@ -1,7 +1,7 @@
 import { h } from 'vue'
 import type { Theme } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
-import OneNavigation from '../../../../shared/components/components/OneNavigation.vue'
+import OneNavigation from '../components/OneNavigation.vue'
 import './custom.css'
 
 export default {

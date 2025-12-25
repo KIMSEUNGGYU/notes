@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { useRoute } from 'vitepress'
-import { NAVIGATION_ITEMS } from '../config/NavigationItems'
+import { NAVIGATION_ITEMS } from './NavigationItems'
 
 const route = useRoute()
 

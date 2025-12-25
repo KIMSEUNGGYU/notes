@@ -4,7 +4,7 @@ export const sharedConfig = defineConfig({
   lang: 'ko-KR',
 
   themeConfig: {
-    // 검색 기능 
+    // 검색 기능
     search: {
       provider: 'local',
       options: {
