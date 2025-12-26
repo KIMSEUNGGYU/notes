@@ -49,12 +49,8 @@ export default mergeConfig({
         ]
       },
       {
-        text: 'API 관리 (초안-개선하기)',
-        collapsed: false,
-        items: [
-          { text: '기본편', link: '/api/basic' },
-          { text: '심화편', link: '/api/advanced' }
-        ]
+        text: 'API',
+        link: '/api/'
       },
       {
         text: '추가 예정',
