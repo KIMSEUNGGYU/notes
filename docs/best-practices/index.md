@@ -3,16 +3,13 @@ layout: home
 title: 프론트엔드 베스트 프랙티스
 
 hero:
-  name: Frontend Best Practices
-  text: 변경하기 쉬운 프론트엔드 코드를 위한 지침서
-  tagline: 유지보수하기 좋은 코드를 작성하는 방법
+  name: Frontend Docs
+  text: FE Best Practice.zip
+  tagline: 경험 기반, 프론트엔드 Best Practice 모음집
   actions:
     - theme: brand
       text: 시작하기
       link: /introduce/
-    - theme: alt
-      text: 실전 사례
-      link: /practical-cases/
 
 features:
   - icon: 🧩
