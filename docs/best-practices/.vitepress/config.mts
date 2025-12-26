@@ -1,15 +1,15 @@
 import { mergeConfig } from './config/shared'
 
 export default mergeConfig({
-  title: '프론트엔드 베스트 프랙티스',
-  description: '변경하기 쉬운 프론트엔드 코드를 위한 지침서',
+  title: 'Frontend Docs',
+  description: '프론트엔드 개발 경험 모음집',
 
-  base: '/best-practices/',
+  base: '/frontend-docs/',
   outDir: '.vitepress/dist',
   srcDir: '.',
 
   themeConfig: {
-    siteTitle: '프론트엔드 베스트 프랙티스',
+    siteTitle: 'Frontend.zip',
 
     nav: [
       { text: '홈', link: '/' }
@@ -20,7 +20,7 @@ export default mergeConfig({
         text: '시작하기',
         items: [
           { text: '소개', link: '/introduce/' },
-          { text: '핵심 철학', link: '/philosophy/' }
+          { text: '좋은 코드란?', link: '/best-code/' }
         ]
       },
       // {
@@ -32,6 +32,14 @@ export default mergeConfig({
       //     { text: 'FSD 아키텍처', link: '/architecture/folder-structure-fsd' }
       //   ]
       // },
+      {
+        text: 'API 관리',
+        collapsed: false,
+        items: [
+          { text: '기본편', link: '/api/basic' },
+          { text: '심화편', link: '/api/advanced' }
+        ]
+      }
       // {
       //   text: 'API',
       //   collapsed: false,
