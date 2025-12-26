@@ -18,13 +18,29 @@ export default mergeConfig({
     sidebar: [
       {
         text: '시작하기',
-        items: [
-          { text: '소개', link: '/introduce/' },
-          { text: '좋은 코드란?', link: '/best-code/' }
-        ]
+        link: '/introduce',
       },
+      { 
+        text: '좋은 코드란?', 
+        collapsed: false,
+        items: [
+          { text: '좋은 코드란?', link: '/best-code' },
+          {
+            text: '부록 (추가예정)',
+            collapsed: true,
+            items: [
+              { text: '프론트엔드에서 SOLID 원칙 (추가예정)' },
+              { text: '선언적 프로그래밍 (추가예정)' },
+              { text: '추상화 (추가예정)' },
+              { text: '관심사의 분리 (추가예정)' },
+              { text: '소프으퉤어 공학 원칙 및 용어 (추가예정)' },
+              { text: '인지과학기반 코드 잘 작성하기 (Toss) (추가예정)' },
+            ]
+          }
+        ]
+      }, 
       {
-        text: '아키텍처',
+        text: '아키텍처 (초안-개선하기)',
         collapsed: false,
         items: [
           { text: '개요', link: '/folder-structure/principles' },
@@ -33,51 +49,23 @@ export default mergeConfig({
         ]
       },
       {
-        text: 'API 관리',
+        text: 'API 관리 (초안-개선하기)',
         collapsed: false,
         items: [
           { text: '기본편', link: '/api/basic' },
           { text: '심화편', link: '/api/advanced' }
         ]
+      },
+      {
+        text: '추가 예정',
+        collapsed: true,
+        items: [
+          { text: 'react-query 패턴',  },
+          { text: '에러 핸들링',  },
+          { text: 'form 관리',  },
+          { text: 'logger',  },
+        ]
       }
-      // {
-      //   text: 'API',
-      //   collapsed: false,
-      //   items: [
-      //     { text: '개요', link: '/api/' },
-      //     { text: 'API 정의', link: '/api/definition' },
-      //     { text: '인터셉터 패턴', link: '/api/interceptors' },
-      //     { text: '에러 핸들링', link: '/api/error-handling' }
-      //   ]
-      // },
-      // {
-      //   text: 'React Query',
-      //   collapsed: false,
-      //   items: [
-      //     { text: '개요', link: '/react-query/' },
-      //     { text: '패턴', link: '/react-query/patterns' },
-      //     { text: 'QueryKey 관리', link: '/react-query/query-key-management' }
-      //   ]
-      // },
-      // {
-      //   text: '에러 핸들링',
-      //   collapsed: true,
-      //   items: [
-      //     { text: '개요', link: '/error-handling/' },
-      //     { text: 'Error 정의', link: '/error-handling/error-definition' },
-      //     { text: '리다이렉트 에러', link: '/error-handling/redirect-errors' }
-      //   ]
-      // },
-      // {
-      //   text: '기능 패턴',
-      //   collapsed: true,
-      //   items: [
-      //     { text: '개요', link: '/features/' },
-      //     { text: '인증 관리', link: '/features/auth' },
-      //     { text: '폼 관리', link: '/features/form-management' },
-      //     { text: '무한 스크롤', link: '/features/infinite-scroll' }
-      //   ]
-      // }
     ],
 
     socialLinks: [
