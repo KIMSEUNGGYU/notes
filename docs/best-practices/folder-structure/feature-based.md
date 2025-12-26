@@ -1,222 +1,174 @@
 ---
 title: Feature 기반 폴더 구조
-description: 
-draft: true
-todo: 
- - 1차 초안 완성 (글 가독성 신경쓰기)
- - 글 다듬기?
+description: 지역성과 Page First 원칙 기반 실무 가이드
+outline: deep
 ---
-
-> TODO: Feature 기반 + 지역성 원칙(Page First) 가 핵심 
 
 # Feature 기반 폴더 구조
 
-## 들어가며
+## 개요
 
-프로젝트가 커질수록 "이 파일을 어디에 둬야 하지?"라는 고민이 늘어납니다. 저는 Next.js 기반 프로젝트를 주로 다루면서, 역할 중심과 Page First를 조합한 구조를 사용하고 있습니다.
+프로젝트가 커지면서 "이 파일을 어디에 둬야 하지?"라는 고민이 늘어납니다. Feature 기반 폴더 구조는 **지역성(Locality)** 과 **Page First** 원칙을 바탕으로 변경에 강한 구조를 만듭니다.
 
-이 글에서는 실무에서 사용하는 구체적인 폴더 구조와 함께, 왜 이렇게 구성했는지, 어떤 점이 좋았는지 공유하려고 합니다.
+---
 
-## 전체 디렉토리 구조
+## 1. 핵심 개념
 
-### 최상위 구조
+### 문제 인식
 
-제가 사용하는 기본 구조입니다:
-
-```tsx
-project/
-├── pages/              # Next.js 페이지 라우팅
-│   ├── _app.tsx
-│   ├── index.tsx
-│   ├── auth/
-│   └── task/
-│
-└── src/
-    ├── components/     # 전역 공통 UI (도메인 모름)
-    ├── hooks/          # 전역 공통 훅
-    ├── utils/          # 전역 유틸 함수
-    ├── lib/            # 라이브러리 설정
-    ├── modules/        # 기능 패키지 (도메인 모름)
-    │
-    └── pages/          # 페이지별 로컬 리소스
-        ├── index/
-        ├── auth/
-        └── task/
-```
-
-여기서 중요한 점은 **두 개의 `pages` 폴더**입니다:
-- `/pages`: Next.js 라우팅을 위한 폴더 (프레임워크 요구사항)
-- `/src/pages`: 페이지별 컴포넌트, 훅, 로직 등을 관리하는 폴더
-
-Next.js의 `/pages` 폴더는 라우팅만 담당하고, 실제 페이지 로직은 `/src/pages`에서 관리합니다.
-
-### 세 가지 레벨의 공유 범위
-
-저는 파일을 세 가지 레벨로 구분합니다:
+역할 중심 구조는 작은 프로젝트에는 편리하지만, 프로젝트가 커질수록 문제가 발생합니다.
 
 ```tsx
+// 역할 중심 구조
 src/
-├── components/        # Level 1: 전역 (프로젝트 전체)
-├── modules/           # Level 2: 모듈 (여러 페이지)
-└── pages/             # Level 3: 로컬 (단일 페이지)
+├── components/
+│   ├── auth/          # 100개 파일
+│   ├── dashboard/     # 150개 파일
+│   └── settings/      # 80개 파일
+├── hooks/
+├── utils/
+└── types/
 ```
 
-**Level 1 - 전역**: 도메인을 모르는 범용 UI/유틸
-- Button, Modal, Input 등
-- date 포맷터, debounce 등
+**문제:**
+- 파일 찾기 어려움
+- 관련 파일이 여러 폴더에 흩어짐
+- 삭제 시 연관 파일 찾는 비용 증가
+- 변경 영향 범위 파악 어려움
 
-**Level 2 - 모듈**: 도메인은 모르지만 특정 기능을 제공
-- 단계형 폼 렌더러
-- 이미지 업로더
-- 차트 래퍼
+---
 
-**Level 3 - 로컬**: 특정 페이지 전용
-- 페이지별 컴포넌트
-- 페이지별 훅과 로직
+### 지역성 원칙 (Locality)
 
-이 구분의 핵심은 **도메인 지식의 유무**입니다. 상위로 갈수록 도메인에 대해 모르고, 하위로 갈수록 도메인 지식이 들어갑니다.
-
-## 페이지 단위 폴더 구조
-
-### 기본 구조
-
-페이지 폴더 안에서 저는 역할별로 폴더를 나눕니다:
+**사용하는 곳과 가장 가까운 위치에 파일을 배치합니다.**
 
 ```tsx
-src/pages/task-detail/
-├── components/          # UI 컴포넌트
-│   ├── TaskHeader.tsx
-│   ├── CommentList.tsx
-│   └── StatusBadge.tsx
-│
-├── hooks/              # 커스텀 훅
-│   ├── useTaskDetail.ts
-│   └── useComments.ts
-│
-├── queries/            # React Query 쿼리
-│   └── task.query.ts
-│
-├── mutations/          # React Query 뮤테이션
-│   └── task.mutation.ts
-│
-├── remotes/            # API 호출 함수
-│   └── task.ts
-│
-├── models/             # 서버 데이터 모델
-│   └── task.schema.ts
-│
-├── types/              # 클라이언트 타입
-│   └── task.type.ts
-│
-├── utils/              # 페이지 전용 유틸
-│   └── formatTaskDate.ts
-│
-├── constants/          # 상수
-│   └── STATUS_OPTIONS.ts
-│
-└── TaskDetailPage.tsx  # 페이지 컴포넌트
+// ❌ 모든 컴포넌트를 최상위에
+src/
+├── components/
+│   ├── DashboardStats.tsx      // dashboard에서만 사용
+│   ├── UserProfile.tsx         // user 페이지에서만 사용
+│   └── Button.tsx              // 전역에서 사용
+└── pages/
+    ├── dashboard/
+    └── user/
 ```
 
-각 폴더의 역할이 명확하고, 관련 파일을 찾기 쉽습니다.
-
-### 실제 사용 예시
-
-실제로 업무 상세 페이지를 만들 때의 흐름입니다:
-
 ```tsx
-// 1. API 호출 함수 정의 (remotes/)
-// remotes/task.ts
-export async function fetchTask(taskId: string) {
-  const response = await client.get(`/tasks/${taskId}`);
-  return response.data;
-}
-
-// 2. 데이터 모델 정의 (models/)
-// models/task.schema.ts
-import { z } from 'zod';
-
-export const TaskSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  status: z.enum(['TODO', 'IN_PROGRESS', 'DONE']),
-  assignee: z.string(),
-  createdAt: z.string(),
-});
-
-export type Task = z.infer<typeof TaskSchema>;
-
-// 3. React Query 쿼리 정의 (queries/)
-// queries/task.query.ts
-import { queryOptions } from '@tanstack/react-query';
-import { fetchTask } from '../remotes/task';
-import { TaskSchema } from '../models/task.schema';
-
-export const taskDetailQuery = (taskId: string) =>
-  queryOptions({
-    queryKey: ['task', taskId],
-    queryFn: async () => {
-      const data = await fetchTask(taskId);
-      return TaskSchema.parse(data); // 런타임 검증
-    },
-  });
-
-// 4. 훅으로 감싸기 (hooks/)
-// hooks/useTaskDetail.ts
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { taskDetailQuery } from '../queries/task.query';
-
-export function useTaskDetail(taskId: string) {
-  return useSuspenseQuery(taskDetailQuery(taskId));
-}
-
-// 5. 컴포넌트에서 사용 (components/)
-// components/TaskHeader.tsx
-import { useTaskDetail } from '../hooks/useTaskDetail';
-
-export function TaskHeader({ taskId }: { taskId: string }) {
-  const { data: task } = useTaskDetail(taskId);
-  
-  return (
-    <header>
-      <h1>{task.title}</h1>
-      <span>{task.status}</span>
-    </header>
-  );
-}
+// ✅ 사용처 가까이
+src/
+├── components/
+│   └── Button.tsx              // 전역 공통만
+└── pages/
+    ├── dashboard/
+    │   └── components/
+    │       └── DashboardStats.tsx    // dashboard 전용
+    └── user/
+        └── components/
+            └── UserProfile.tsx       // user 전용
 ```
 
-이렇게 계층을 나누면 각 레이어의 책임이 명확해집니다:
-- `remotes`: 순수한 HTTP 통신
-- `models`: 데이터 검증과 타입
-- `queries`: React Query 캐싱 로직
-- `hooks`: 비즈니스 로직
-- `components`: UI 렌더링
+**효과:**
+- 폴더 위치가 사용 범위를 보장
+- 변경 영향 범위가 명확
+- 페이지 삭제 시 폴더만 제거하면 됨
 
-## 공통 폴더 컨벤션
+---
 
-### 폴더별 역할 정리
+### Page First 원칙
 
-제가 사용하는 폴더들과 각각의 명확한 역할입니다:
-
-| 폴더 | 역할 | 예시 |
-|------|------|------|
-| `components/` | UI 컴포넌트 | `TaskList.tsx`, `StatusBadge.tsx` |
-| `contexts/` | Context API | `TaskFilterContext.tsx` |
-| `hooks/` | 커스텀 훅 | `useTaskList.ts`, `useFilter.ts` |
-| `queries/` | React Query 쿼리 | `task.query.ts` |
-| `mutations/` | React Query 뮤테이션 | `task.mutation.ts` |
-| `remotes/` | API 호출 함수 | `task.ts` |
-| `models/` | 서버 데이터 모델 (zod) | `task.schema.ts` |
-| `types/` | 클라이언트 타입 | `filter.type.ts` |
-| `utils/` | 유틸 함수 | `formatDate.ts` |
-| `constants/` | 상수 | `STATUS_OPTIONS.ts` |
-
-### models vs types
-
-처음에는 이 둘의 구분이 헷갈렸습니다. 저는 다음과 같이 구분합니다:
+**처음엔 로컬에, 재사용이 필요하면 상위로 이동합니다.**
 
 ```tsx
-// models/ - 서버에서 오는 데이터의 런타임 검증
+// 1단계: 페이지 로컬에 생성
+src/pages/product-detail/
+├── components/
+│   └── PriceSection.tsx    // 여기서 시작
+└── ProductDetailPage.tsx
+
+// 2단계: 실제 재사용 필요 시 상위로
+src/
+├── components/
+│   └── PriceSection.tsx    // 두 번째 사용처 생기면 이동
+└── pages/
+    ├── product-detail/
+    └── checkout/           // 여기서도 사용
+```
+
+**상위로 올릴 때 확인:**
+1. 실제로 두 곳 이상에서 사용?
+2. 도메인 지식 제거 가능?
+3. API(props) 명확?
+
+**지역성 vs Page First:**
+- **지역성**: "어디에" 둘 것인가 (위치)
+- **Page First**: "언제" 상위로 올릴 것인가 (시점)
+
+---
+
+### 전체 구조
+
+실무에서 사용하는 구조입니다 (Next.js Pages Router 기준).
+
+#### 프로젝트 최상위
+
+```tsx
+pages/             # Next.js 페이지 라우팅
+├── _app.tsx       # 앱 설정
+├── _document.tsx  # HTML 문서 설정
+├── index.tsx      # 홈페이지
+├── auth/          # 인증 관련
+├── task/          # 업무 관련
+└── my-page.tsx    # 마이페이지
+
+src/
+├── components/    # 공통 컴포넌트
+├── constants/     # 공통 상수값
+├── contexts/      # 공통 context
+├── hooks/         # 공통 커스텀 훅
+├── lib/           # 공통 라이브러리 설정 (queryClient, auth 등)
+├── models/        # 공통 서버 타입 정의
+├── modules/       # 공통 기능 단위 (최후의 수단)
+├── mutations/     # 공통 React Query 뮤테이션
+├── pages/         # 페이지별 리소스
+├── queries/       # 공통 React Query 쿼리
+├── remotes/       # API 클라이언트 및 공통 API
+├── stores/        # 공용 상태
+├── types/         # 공용 클라이언트 타입
+└── utils/         # 헬퍼 함수
+```
+
+**두 개의 pages:**
+- `/pages`: Next.js 라우팅 (프레임워크 요구)
+- `/src/pages`: 페이지별 컴포넌트, 훅, 로직
+
+
+---
+
+## 2. 폴더별 역할
+```
+src/
+├── components/    # 공통 컴포넌트
+├── constants/     # 공통 상수값
+├── contexts/      # 공통 context
+├── hooks/         # 공통 커스텀 훅
+├── lib/           # 공통 라이브러리 설정 (queryClient, auth 등)
+├── models/        # 공통 (서버용)타입 정의
+├── modules/       # 공통 기능 단위 정의 
+├── mutations/     # 공통 React Query 뮤테이션
+├── pages/         # 페이지별 컴포넌트
+├── queries/       # 공통 React Query 쿼리
+├── remotes/       # API 클라이언트 및 공통 API 정의 
+├── stores/        # 공용 상태 
+├── types/         # 공용 클라이언트 타입 정의
+└── utils/         # 헬퍼 함수
+```
+
+### models/ vs types/
+- **models/**: 서버 타입 (API 통신용)
+- **types/**: 클라이언트 타입 (form, 파생 타입)
+
+```tsx
 // models/task.schema.ts
 import { z } from 'zod';
 
@@ -227,9 +179,10 @@ export const TaskSchema = z.object({
 });
 
 export type Task = z.infer<typeof TaskSchema>;
+```
 
-// types/ - 클라이언트에서만 사용하는 타입
-// types/filter.type.ts
+```tsx
+// types/task.type.ts
 export type TaskFilter = {
   status: Task['status'] | 'ALL';
   searchQuery: string;
@@ -239,137 +192,59 @@ export type TaskFilter = {
 export type TaskListViewMode = 'list' | 'grid';
 ```
 
-**models/**:
-- 서버 API 응답/요청의 형태
-- zod로 런타임 검증 가능
-- 서버와의 계약(contract)
+**구분 기준:**
+- **models**: 서버와 통신하는 타입, 런타임 검증
+- **types**: 클라이언트 내부에서만 사용하는 타입
 
-**types/**:
-- 클라이언트 상태나 UI를 위한 타입
-- 런타임 코드 없음
-- 내부 구현 디테일
 
-### queries vs mutations
+### 파일/폴더 네이밍 컨벤션
 
-React Query를 사용할 때 저는 파일을 분리합니다:
+| 대상 | 규칙 | 예시 |
+|------|------|------|
+| 디렉토리 | kebab-case | `task-detail/` |
+| 컴포넌트 | PascalCase | `TaskHeader.tsx` |
+| 페이지 | PascalCase + Page | `TaskDetailPage.tsx` |
+| 훅 | use + camelCase | `useTaskDetail.ts` |
+| 쿼리 | .query 접미사 | `task.query.ts` |
+| 뮤테이션 | .mutation 접미사 | `task.mutation.ts` |
+| 모델 | .dto 접미사 | `task.dto.ts` |
+| 타입 | .type 접미사 | `task.type.ts` |
 
-```tsx
-// queries/ - 데이터 조회
-// queries/task.query.ts
-export const taskListQuery = (filter: TaskFilter) =>
-  queryOptions({
-    queryKey: ['tasks', filter],
-    queryFn: () => fetchTasks(filter),
-  });
+---
 
-export const taskDetailQuery = (taskId: string) =>
-  queryOptions({
-    queryKey: ['task', taskId],
-    queryFn: () => fetchTask(taskId),
-  });
+### modules/ (최후의 수단)
 
-// mutations/ - 데이터 변경
-// mutations/task.mutation.ts
-export const updateTaskMutation = () =>
-  mutationOptions({
-    mutationFn: (params: { id: string; data: Partial<Task> }) =>
-      updateTask(params.id, params.data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-    },
-  });
-```
+여러 페이지에서 재사용되지만 **도메인을 모르는 기능 패키지**입니다.
 
-이렇게 분리하면:
-- 조회와 변경의 책임이 명확
-- 캐시 무효화 로직을 한 곳에서 관리
-- 파일명만 봐도 읽기/쓰기 구분 가능
-
-또한 `queryOptions`/`mutationOptions`로 정의하는 이유는 정의와 사용처를 구분해서 활용할 수 있어 관리에 용이하기 때문입니다.
-
-## modules 활용하기
-
-### modules의 개념
-
-`modules/`는 여러 페이지에서 재사용되지만 **도메인을 모르는 기능 패키지**를 여기에 둡니다. 저는 실제로 잘 사용하지 않는 편이고, 지역성과 전역 공통 사이에 애매한 경우에만 사용합니다.
+최대한 사용하지 않다가, 어쩔 수 없을 때만 사용합니다.
 
 ```tsx
 src/modules/
-├── step-renderer/       # 단계형 UI 렌더러
+├── step-renderer/       # 단계형 UI
 │   ├── StepRenderer.tsx
 │   ├── useStep.ts
-│   ├── types.ts
 │   └── index.ts
 │
-└── image-uploader/      # 이미지 업로드 기능
+└── image-uploader/      # 이미지 업로드
     ├── ImageUploader.tsx
     ├── useImageUpload.ts
-    ├── utils.ts
     └── index.ts
 ```
 
-### 실제 사례: step-renderer
-
-저는 여러 페이지에서 단계형 폼을 사용합니다. 회원가입, 업무 생성, 설정 마법사 등에서요. 각 페이지의 단계 내용은 다르지만, **단계를 관리하는 로직은 동일**합니다.
-
-```tsx
-// modules/step-renderer/StepRenderer.tsx
-type Step = {
-  id: string;
-  component: React.ComponentType<{ onNext: () => void }>;
-};
-
-type StepRendererProps = {
-  steps: Step[];
-  onComplete: () => void;
-};
-
-export function StepRenderer({ steps, onComplete }: StepRendererProps) {
-  const { currentStep, next, prev } = useStep(steps.length);
-  
-  const CurrentStepComponent = steps[currentStep].component;
-  
-  return (
-    <div>
-      <CurrentStepComponent 
-        onNext={currentStep === steps.length - 1 ? onComplete : next} 
-      />
-    </div>
-  );
-}
-
-// pages/signup/SignupPage.tsx
-import { StepRenderer } from '@/modules/step-renderer';
-import { PersonalInfo, AccountInfo, Complete } from './components';
-
-export function SignupPage() {
-  const steps = [
-    { id: 'personal', component: PersonalInfo },
-    { id: 'account', component: AccountInfo },
-    { id: 'complete', component: Complete },
-  ];
-  
-  return <StepRenderer steps={steps} onComplete={handleSignup} />;
-}
-```
-
-`StepRenderer`는 "회원가입", "업무" 같은 도메인을 전혀 모릅니다. 단지 **단계를 관리하는 기능**만 제공합니다.
-
-### modules vs components 구분
-
-처음에는 이 둘을 구분하기 어려웠습니다. 제 기준은:
+**modules vs components:**
+- **components**: 순수 UI (stateless)
+- **modules**: UI + 로직 + 상태 (stateful)
 
 ```tsx
-// components/ - 순수 UI, props만 받아서 렌더링
+// components/ - 순수 UI
 export function Button({ onClick, children }: ButtonProps) {
   return <button onClick={onClick}>{children}</button>;
 }
 
-// modules/ - UI + 로직 + 상태를 패키징
+// modules/ - UI + 로직 + 상태
 export function ImageUploader({ onUpload }: ImageUploaderProps) {
   const { upload, preview, isUploading } = useImageUpload();
-  // 내부에 상태와 로직이 있음
-  
+
   return (
     <div>
       {preview && <img src={preview} />}
@@ -380,116 +255,55 @@ export function ImageUploader({ onUpload }: ImageUploaderProps) {
 }
 ```
 
-**components/**는 stateless에 가깝고, **modules/**는 stateful한 기능 단위입니다.
+---
 
-## 파일 네이밍 규칙
+## 3. 실전 가이드
 
-### 디렉토리와 파일
+### 개발 흐름
 
-저는 다음 규칙을 따릅니다:
-
-```tsx
-src/pages/
-├── task-detail/           # 디렉토리: kebab-case
-│   ├── components/
-│   │   ├── TaskHeader.tsx       # 컴포넌트: PascalCase
-│   │   └── CommentList.tsx
-│   ├── hooks/
-│   │   └── useTaskDetail.ts     # 훅: camelCase (use 접두사)
-│   ├── queries/
-│   │   └── task.query.ts        # 쿼리: 접미사 .query
-│   ├── mutations/
-│   │   └── task.mutation.ts     # 뮤테이션: 접미사 .mutation
-│   └── TaskDetailPage.tsx       # 페이지: PascalCase + Page
-```
-
-### 배럴 파일 (index.ts)
-
-모듈에서는 배럴 파일로 public API를 명시합니다:
+**1. 페이지 단위부터 시작**
 
 ```tsx
-// modules/step-renderer/index.ts
-export { StepRenderer } from './StepRenderer';
-export { useStep } from './useStep';
-export type { Step, StepRendererProps } from './types';
-
-// 내부 구현은 export 하지 않음
-// - helpers.ts
-// - constants.ts
-```
-
-이렇게 하면:
-- 외부에서 사용할 API만 노출
-- 내부 구현 변경이 자유로움
-- 모듈의 인터페이스가 명확
-
-## 실전 팁
-
-### 1. 처음부터 완벽하게 나누지 않기
-
-저는 처음에 모든 파일을 한 곳에 두고 시작합니다:
-
-```tsx
-// 초기
-src/pages/task-detail/
-├── TaskDetailPage.tsx    # 여기에 모든 로직
-
-// 점진적으로 분리
-src/pages/task-detail/
+src/pages/order-history/
 ├── components/
-│   └── TaskHeader.tsx    # UI가 복잡해지면 분리
+│   ├── OrderList.tsx
+│   └── OrderItem.tsx
 ├── hooks/
-│   └── useTaskDetail.ts  # 로직이 복잡해지면 분리
-└── TaskDetailPage.tsx
+│   └── useOrderHistory.ts
+└── OrderHistoryPage.tsx
 ```
 
-**필요가 생겼을 때** 분리하는 것이 과도한 추상화를 막습니다.
+페이지 내에서 필요한 컴포넌트, 훅, 타입을 모두 로컬에 만듭니다.
 
-### 2. 파일은 작게, 폴더는 얕게
-
-저는 다음을 선호합니다:
+**2. 재사용 필요 시 상위로**
 
 ```tsx
-// ✅ 여러 작은 파일
-components/
-├── TaskHeader.tsx        # 50줄
-├── TaskBody.tsx          # 60줄
-└── TaskFooter.tsx        # 40줄
-
-// ❌ 하나의 큰 파일
-components/
-└── TaskDetail.tsx        # 300줄
+src/
+├── components/
+│   └── OrderItem.tsx        # 두 번째 사용처 생기면 이동
+└── pages/
+    ├── order-history/
+    │   ├── components/
+    │   │   └── OrderList.tsx
+    │   └── hooks/
+    │       └── useOrderHistory.ts
+    └── order-detail/         # 여기서도 OrderItem 사용
 ```
 
-하지만 폴더는 너무 깊게 만들지 않습니다:
+실제로 다른 페이지에서도 사용할 때 공통 폴더로 올립니다.
 
-```tsx
-// ❌ 너무 깊은 구조
-components/task/detail/header/title/
+---
 
-// ✅ 적당한 깊이
-components/
-└── task/
-    ├── TaskHeader.tsx
-    └── TaskTitle.tsx
-```
+## 정리
 
-### 3. 컨벤션은 팀과 함께
+### 핵심 원칙
 
-폴더 구조는 팀의 합의가 중요합니다. 저희 팀은:
+- **지역성**: 사용처와 가깝게 (위치)
+- **Page First**: 로컬 먼저, 필요 시 상위로 (시점)
+- **점진적 추상화**: 실제 필요 확인 후 추상화
 
-1. **README에 구조 문서화**
-2. **ESLint로 import 규칙 강제**
-3. **코드 리뷰에서 위치 검토**
+### 적용 효과
 
-이렇게 세 가지로 컨벤션을 유지합니다.
-
-## 마치며
-
-Feature 기반 폴더 구조의 핵심은:
-
-- **페이지 단위로 역할별 폴더** 구성
-- **세 가지 레벨의 공유 범위** (전역/모듈/로컬)
-- **점진적인 추상화**
-
-저는 이 구조를 사용하면서 파일을 찾는 시간이 크게 줄었고, 코드 수정의 영향 범위를 쉽게 파악할 수 있게 되었습니다. 각 레이어의 책임이 명확해지니 새로운 기능을 추가하거나 기존 코드를 수정할 때도 훨씬 자신감 있게 작업할 수 있었습니다.
+- 파일 찾는 시간 감소
+- 변경 영향 범위 명확
+- 페이지 단위 독립적 개발 가능

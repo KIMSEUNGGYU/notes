@@ -43,7 +43,6 @@ export default mergeConfig({
         text: '아키텍처 (초안-개선하기)',
         collapsed: false,
         items: [
-          { text: '개요', link: '/folder-structure/principles' },
           { text: 'Feature 기반 폴더 구조', link: '/folder-structure/feature-based' },
           { text: 'FSD 아키텍처', link: '/folder-structure/fsd-architecture' }
         ]
