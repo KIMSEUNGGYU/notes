@@ -23,15 +23,15 @@ export default mergeConfig({
           { text: '좋은 코드란?', link: '/best-code/' }
         ]
       },
-      // {
-      //   text: '아키텍처',
-      //   collapsed: false,
-      //   items: [
-      //     { text: '개요', link: '/architecture/' },
-      //     { text: '역할별 + Page First', link: '/architecture/folder-structure-role-based' },
-      //     { text: 'FSD 아키텍처', link: '/architecture/folder-structure-fsd' }
-      //   ]
-      // },
+      {
+        text: '아키텍처',
+        collapsed: false,
+        items: [
+          { text: '개요', link: '/folder-structure/principles' },
+          { text: 'Feature 기반 폴더 구조', link: '/folder-structure/feature-based' },
+          { text: 'FSD 아키텍처', link: '/folder-structure/fsd-architecture' }
+        ]
+      },
       {
         text: 'API 관리',
         collapsed: false,
