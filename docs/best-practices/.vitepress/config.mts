@@ -48,7 +48,7 @@ export default mergeConfig({
         ]
       },
       {
-        text: 'API',
+        text: 'API (초안-개선하기)',
         link: '/api/'
       },
       {
