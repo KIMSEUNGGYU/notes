@@ -414,3 +414,12 @@ function UserForm() {
   );
 }
 ```
+
+## 영향을 준 좋은 글 
+- 토스 growth tack 스터디 글 + 회고 내용 참고해서 
+- https://ikki-kki.dev/posts/the-magic-of-react-concurrency
+- https://evan-moon.github.io/2025/09/07/declarative-programming-misconceptions-and-essence/
+- https://evan-moon.github.io/2025/10/07/declarative-overlay-pattern-with-overlay-kit/
+
+
+
