@@ -6,7 +6,6 @@ import { filterDraftFromSidebar } from './config/sidebar';
 // Vercel 환경 변수 우선, 없으면 .env 파일 읽기
 const env = loadEnv('', process.cwd(), '');
 const phase = process.env.PHASE || env.PHASE;
-console.log('PHASE:', phase);
 
 const sidebar = [
   {
