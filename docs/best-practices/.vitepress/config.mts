@@ -10,13 +10,13 @@ const phase = process.env.PHASE || env.PHASE;
 const sidebar = [
   {
     text: '시작하기',
-    link: '/introduce',
+    link: '/introduce/',
   },
   {
     text: '좋은 코드란?',
     collapsed: false,
     items: [
-      { text: '좋은 코드란?', link: '/best-code' },
+      { text: '좋은 코드란?', link: '/best-code/' },
       {
         text: '부록 (추가예정)',
         collapsed: true,
@@ -60,7 +60,7 @@ export default mergeConfig({
   title: 'Frontend Docs',
   description: '프론트엔드 개발 경험 모음집',
 
-  base: '/frontend-docs/',
+  base: '/frontend-docs',
   outDir: '.vitepress/dist',
   srcDir: '.',
 
