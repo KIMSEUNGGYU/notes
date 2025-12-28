@@ -123,6 +123,9 @@ export type UpdatePaymentParams = Partial<Pick<Payment, 'status'>> & {
 
 런타임 타입 검증이 필요한 경우 사용합니다.
 
+- [검증하지 말고 파싱하라](https://eatchangmyeong.github.io/2022/12/04/parse-don-t-validate.html)
+- [링크-이전중이라서](https://blog.eatch.dev/) 
+
 ```typescript
 // models/payment.schema.ts
 import { z } from 'zod';
