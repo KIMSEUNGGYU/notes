@@ -148,11 +148,7 @@ export function makeLogger<TEventParams extends EventParams = EventParams>(
 개발 환경에서 `console.table`로 시각화.
 
 ```typescript
-export class ConsoleLogger<TEventParams extends EventParams = EventParams>
-  implements Logger<TEventParams> {
-
-  constructor(private readonly baseParams: BaseLoggerParams) {}
-
+export class ConsoleLogger implements Logger {
   private getBaseParams(params?: LoggerParams): LoggerParams {
     return {
       device: getDevice(),      // 런타임에 PC/모바일 감지
@@ -162,39 +158,21 @@ export class ConsoleLogger<TEventParams extends EventParams = EventParams>
   }
 
   log(name: string, params?: LoggerParams) {
-    console.table({
-      event: name,
-      timestamp: new Date().toISOString(),
-      ...this.getBaseParams(params),
-    });
-  }
-
-  logClick(params: TEventParams) {
-    this.log(EVENT_NAME.CLICK, params as LoggerParams);
+    console.table({ event: name, ...this.getBaseParams(params) });
   }
 }
 ```
 
 `getBaseParams`가 필드 병합을 담당. 나중 필드가 이전 값을 덮어쓴다.
 
+[전체 코드 보기](../../../code-examples/logger/lib/logger/ConsoleLogger.ts)
+
 ### GALogger
 
 프로덕션 환경에서 Google Analytics 4로 전송.
 
 ```typescript
-export class GALogger<TEventParams extends EventParams = EventParams>
-  implements Logger<TEventParams> {
-
-  constructor(private readonly baseParams: BaseLoggerParams) {}
-
-  private getBaseParams(params?: LoggerParams): LoggerParams {
-    return {
-      device: getDevice(),
-      ...this.baseParams,
-      ...params,
-    };
-  }
-
+export class GALogger implements Logger {
   log(name: string, params?: LoggerParams) {
     if (typeof window === 'undefined' || !window.dataLayer) {
       return;
@@ -205,33 +183,25 @@ export class GALogger<TEventParams extends EventParams = EventParams>
       ...this.getBaseParams(params),
     });
   }
-
-  logClick(params: TEventParams) {
-    this.log(EVENT_NAME.CLICK, params);
-  }
 }
 ```
 
 **SSR 대응**: `window` 없거나 `dataLayer` 없으면 조용히 무시. 에러 발생 안 함.
+
+[전체 코드 보기](../../../code-examples/logger/lib/logger/GALogger.ts)
 
 ### combineLoggers
 
 여러 로거를 하나로 묶는다. `dev` Phase에서 Console + GA 동시 사용.
 
 ```typescript
-export function combineLoggers<TEventParams extends EventParams = EventParams>(
-  ...loggers: Logger<TEventParams>[]
-): Logger<TEventParams> {
+export function combineLoggers(...loggers: Logger[]): Logger {
   return {
-    log(name: string, params?: LoggerParams) {
-      for (const logger of loggers) {
-        logger.log(name, params);
-      }
+    log(name, params) {
+      loggers.forEach(logger => logger.log(name, params));
     },
-    logClick(params: TEventParams) {
-      for (const logger of loggers) {
-        logger.logClick(params);
-      }
+    logClick(params) {
+      loggers.forEach(logger => logger.logClick(params));
     },
   };
 }
@@ -239,13 +209,13 @@ export function combineLoggers<TEventParams extends EventParams = EventParams>(
 
 동일한 `Logger` 인터페이스 반환 → 사용처는 단일 로거처럼 사용.
 
+[전체 코드 보기](../../../code-examples/logger/lib/logger/combineLoggers.ts)
+
 ### Device 자동 감지
 
 ```typescript
 export function getDevice(): Device {
-  if (typeof window === 'undefined') {
-    return DEVICE.PC_WEB;
-  }
+  if (typeof window === 'undefined') return DEVICE.PC_WEB;
 
   const isPc = window.matchMedia(`(min-width: ${BREAKPOINTS.mobile + 1}px)`).matches;
   return isPc ? DEVICE.PC_WEB : DEVICE.MOBILE_WEB;
@@ -256,11 +226,15 @@ export function getDevice(): Device {
 - 클라이언트: `matchMedia`로 뷰포트 감지
 - 로그 전송할 때마다 호출 → 항상 최신 값
 
+[전체 코드 보기](../../../code-examples/logger/lib/logger/utils.ts)
+
 ---
 
 ## 3. 실전 활용 사례
 
 실제 프로젝트에서는 페이지마다 별도 로거 디렉토리를 만들어 관리한다.
+
+**전체 코드**: [code-examples/logger](../../../code-examples/logger/)
 
 ### 디렉토리 구조
 
@@ -360,6 +334,12 @@ export function PCSection6() {
 ```
 
 **장점**: Home 페이지에서만 유효한 값만 사용 가능. 다른 페이지 값 입력 시 컴파일 에러.
+
+**참고**:
+- [전체 페이지 로거 구현](../../../code-examples/logger/pages/home/logger/)
+- [constants.ts](../../../code-examples/logger/pages/home/logger/constants.ts)
+- [types.ts](../../../code-examples/logger/pages/home/logger/types.ts)
+- [index.ts](../../../code-examples/logger/pages/home/logger/index.ts)
 
 ---
 
