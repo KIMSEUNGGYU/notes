@@ -55,8 +55,8 @@ export default mergeConfig({
         text: '추가 예정',
         collapsed: true,
         items: [
-          { text: 'react-query 패턴',  },
-          { text: '에러 핸들링',  },
+          { text: 'react-query 패턴 (초안-개선하기)', link: '/react-query/' },
+          { text: '에러 핸들링 (초안-개선하기)', link: '/error-handling/' },
           { text: 'form 관리',  },
           { text: 'logger',  },
         ]
