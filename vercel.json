@@ -12,7 +12,7 @@
       "permanent": false
     }
   ],
-  "buildCommand": "node .scripts/build.mjs",
+  "buildCommand": "pnpm build",
   "outputDirectory": "dist",
   "installCommand": "pnpm install"
 }
