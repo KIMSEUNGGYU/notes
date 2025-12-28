@@ -57,8 +57,8 @@ export default mergeConfig({
         items: [
           { text: 'react-query 패턴 (초안-개선하기)', link: '/react-query/' },
           { text: '에러 핸들링 (초안-개선하기)', link: '/error-handling/' },
+          { text: 'logger (초안-개선하기)', link: '/logger/' },
           { text: 'form 관리',  },
-          { text: 'logger',  },
         ]
       }
     ],
