@@ -67,7 +67,10 @@ export default mergeConfig({
   themeConfig: {
     siteTitle: 'Frontend.zip',
 
-    nav: [{ text: '홈', link: '/' }],
+    nav: [
+      { text: '홈', link: '/' },
+      { text: '블로그', link: 'https://kimseunggyu.vercel.app/' },
+    ],
 
     sidebar: await filterDraftFromSidebar(sidebar, phase),
 
