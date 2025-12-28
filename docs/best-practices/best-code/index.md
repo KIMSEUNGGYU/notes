@@ -2,7 +2,6 @@
 title: 좋은 코드란?
 description: 변경에 용이한 코드 작성을 위한 코드 철학
 outline: 2
-draft: true
 todo:
  - 1차 초안 완성 (글 가독성 신경쓰기)
  - 글 다듬기?
