@@ -43,7 +43,7 @@ const sidebar = [
   {
     text: 'API',
     link: '/api/',
-    draft: true,
+    // draft: true,
   },
   {
     text: '추가 예정',
