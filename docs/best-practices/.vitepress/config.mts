@@ -1,5 +1,12 @@
+import { loadEnv } from 'vitepress';
 import { mergeConfig } from './config/shared';
 import { filterDraftFromSidebar } from './config/sidebar';
+
+// .env 파일과 Vercel 환경 변수 모두 읽기
+// Vercel 환경 변수 우선, 없으면 .env 파일 읽기
+const env = loadEnv('', process.cwd(), '');
+const phase = process.env.PHASE || env.PHASE;
+console.log('PHASE:', phase);
 
 const sidebar = [
   {
@@ -63,7 +70,7 @@ export default mergeConfig({
 
     nav: [{ text: '홈', link: '/' }],
 
-    sidebar: await filterDraftFromSidebar(sidebar),
+    sidebar: await filterDraftFromSidebar(sidebar, phase),
 
     socialLinks: [{ icon: 'github', link: 'https://github.com/kimseunggyu/notes' }],
   },
