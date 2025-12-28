@@ -1,7 +1,8 @@
-export { makeLogger } from './makeLogger';
 export { ConsoleLogger } from './ConsoleLogger';
-export { GALogger } from './GALogger';
 export { combineLoggers } from './combineLoggers';
+export { DEVICE, EVENT_NAME } from './constants';
+export { GALogger } from './GALogger';
+export { makeLogger } from './makeLogger';
 export type {
   BaseLoggerParams,
   Device,
@@ -12,4 +13,3 @@ export type {
   LoggerParams,
   MakeLoggerOptions,
 } from './types';
-export { DEVICE, EVENT_NAME } from './constants';

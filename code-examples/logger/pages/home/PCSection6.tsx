@@ -5,17 +5,16 @@ import { Asset } from '@tds/mobile';
 import { Spacing } from '@tossteam/emotion-utils';
 import { AnimationOnImpression } from 'components/AnimationOnImpression';
 import Link from 'next/link';
-import { LABEL, SECTION_TYPE, homeLogger } from 'pages/home/logger';
+import { homeLogger, LABEL, SECTION_TYPE } from 'pages/home/logger';
 import type { ComponentProps } from 'react';
-import { IMAGE, TEXT } from './constants';
-import { LINK } from './constants';
+import { IMAGE, LINK, TEXT } from './constants';
 
 export function PCSection6() {
   return (
     <div css={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: 845 }}>
       <Spacing size={100} />
       <AnimationOnImpression areaThreshold={0} timeThreshold={0}>
-        {play => (
+        {(play) => (
           <AnimateStack delay={0.8} motion={rally.slide({ type: 'in', direction: 'up', speed: 'slow' })} play={play}>
             <Txt typography="h4" style={{ textAlign: 'center' }}>
               요즘 사장님들이 사용하시는

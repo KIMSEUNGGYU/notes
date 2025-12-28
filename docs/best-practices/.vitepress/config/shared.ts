@@ -1,7 +1,7 @@
-import { defineConfig } from 'vitepress'
+import { defineConfig } from 'vitepress';
 
 // 프로덕션 환경 체크
-const isProduction = process.env.NODE_ENV === 'production'
+const isProduction = process.env.NODE_ENV === 'production';
 
 export const sharedConfig = defineConfig({
   lang: 'ko-KR',
@@ -9,7 +9,7 @@ export const sharedConfig = defineConfig({
   // 프로덕션에서 draft 페이지 제외
   transformPageData(pageData) {
     if (isProduction && pageData.frontmatter.draft) {
-      return { ...pageData, frontmatter: { ...pageData.frontmatter, layout: false } }
+      return { ...pageData, frontmatter: { ...pageData.frontmatter, layout: false } };
     }
   },
 
@@ -23,7 +23,7 @@ export const sharedConfig = defineConfig({
             translations: {
               button: {
                 buttonText: '검색',
-                buttonAriaLabel: '검색'
+                buttonAriaLabel: '검색',
               },
               modal: {
                 noResultsText: '결과를 찾을 수 없습니다',
@@ -31,23 +31,23 @@ export const sharedConfig = defineConfig({
                 footer: {
                   selectText: '선택',
                   navigateText: '이동',
-                  closeText: '닫기'
-                }
-              }
-            }
-          }
-        }
-      }
+                  closeText: '닫기',
+                },
+              },
+            },
+          },
+        },
+      },
     },
     // 목차 (Table of Contents)
     outline: {
       level: [2, 3],
-      label: '목차'
+      label: '목차',
     },
     // 문서 하단
     docFooter: {
       prev: '이전',
-      next: '다음'
+      next: '다음',
     },
 
     darkModeSwitchLabel: '다크 모드',
@@ -58,18 +58,18 @@ export const sharedConfig = defineConfig({
       text: '최종 수정',
       formatOptions: {
         dateStyle: 'short',
-        timeStyle: 'short'
-      }
-    }
+        timeStyle: 'short',
+      },
+    },
   },
 
   markdown: {
-    lineNumbers: true
+    lineNumbers: true,
   },
 
   cleanUrls: true,
-  lastUpdated: true
-})
+  lastUpdated: true,
+});
 
 export function mergeConfig(override) {
   return defineConfig({
@@ -77,7 +77,7 @@ export function mergeConfig(override) {
     ...override,
     themeConfig: {
       ...sharedConfig.themeConfig,
-      ...override.themeConfig
-    }
-  })
+      ...override.themeConfig,
+    },
+  });
 }

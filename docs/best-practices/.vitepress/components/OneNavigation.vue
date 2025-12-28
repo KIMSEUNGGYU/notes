@@ -23,18 +23,17 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vitepress'
-import { NAVIGATION_ITEMS } from './NavigationItems'
+import { useRoute } from 'vitepress';
 
-const route = useRoute()
+const route = useRoute();
 
-function isActive(path: string): boolean {
-  return route.path.startsWith(path)
+function _isActive(path: string): boolean {
+  return route.path.startsWith(path);
 }
 
-function handleNavigation(href: string): void {
+function _handleNavigation(href: string): void {
   if (typeof window !== 'undefined') {
-    window.location.href = href
+    window.location.href = href;
   }
 }
 </script>

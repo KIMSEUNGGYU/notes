@@ -1,7 +1,7 @@
 import { getPhase } from '@ishopcare/phase';
 import { ConsoleLogger } from './ConsoleLogger';
-import { GALogger } from './GALogger';
 import { combineLoggers } from './combineLoggers';
+import { GALogger } from './GALogger';
 import type { EventParams, Logger, MakeLoggerOptions } from './types';
 
 /**
@@ -35,7 +35,7 @@ import type { EventParams, Logger, MakeLoggerOptions } from './types';
  * ```
  */
 export function makeLogger<TEventParams extends EventParams = EventParams>(
-  options: MakeLoggerOptions
+  options: MakeLoggerOptions,
 ): Logger<TEventParams> {
   const phase = getPhase();
 
