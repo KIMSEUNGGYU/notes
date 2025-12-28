@@ -165,7 +165,7 @@ export class ConsoleLogger implements Logger {
 
 `getBaseParams`가 필드 병합을 담당. 나중 필드가 이전 값을 덮어쓴다.
 
-[전체 코드 보기](../../../code-examples/logger/lib/logger/ConsoleLogger.ts)
+[전체 코드 보기](https://github.com/KIMSEUNGGYU/notes/blob/main/code-examples/logger/lib/logger/ConsoleLogger.ts)
 
 ### GALogger
 
@@ -188,7 +188,7 @@ export class GALogger implements Logger {
 
 **SSR 대응**: `window` 없거나 `dataLayer` 없으면 조용히 무시. 에러 발생 안 함.
 
-[전체 코드 보기](../../../code-examples/logger/lib/logger/GALogger.ts)
+[전체 코드 보기](https://github.com/KIMSEUNGGYU/notes/blob/main/code-examples/logger/lib/logger/GALogger.ts)
 
 ### combineLoggers
 
@@ -209,7 +209,7 @@ export function combineLoggers(...loggers: Logger[]): Logger {
 
 동일한 `Logger` 인터페이스 반환 → 사용처는 단일 로거처럼 사용.
 
-[전체 코드 보기](../../../code-examples/logger/lib/logger/combineLoggers.ts)
+[전체 코드 보기](https://github.com/KIMSEUNGGYU/notes/blob/main/code-examples/logger/lib/logger/combineLoggers.ts)
 
 ### Device 자동 감지
 
@@ -226,7 +226,7 @@ export function getDevice(): Device {
 - 클라이언트: `matchMedia`로 뷰포트 감지
 - 로그 전송할 때마다 호출 → 항상 최신 값
 
-[전체 코드 보기](../../../code-examples/logger/lib/logger/utils.ts)
+[전체 코드 보기](https://github.com/KIMSEUNGGYU/notes/blob/main/code-examples/logger/lib/logger/utils.ts)
 
 ---
 
@@ -234,7 +234,7 @@ export function getDevice(): Device {
 
 실제 프로젝트에서는 페이지마다 별도 로거 디렉토리를 만들어 관리한다.
 
-**전체 코드**: [code-examples/logger](../../../code-examples/logger/)
+**전체 코드**: [code-examples/logger](https://github.com/KIMSEUNGGYU/notes/tree/main/code-examples/logger)
 
 ### 디렉토리 구조
 
@@ -336,10 +336,10 @@ export function PCSection6() {
 **장점**: Home 페이지에서만 유효한 값만 사용 가능. 다른 페이지 값 입력 시 컴파일 에러.
 
 **참고**:
-- [전체 페이지 로거 구현](../../../code-examples/logger/pages/home/logger/)
-- [constants.ts](../../../code-examples/logger/pages/home/logger/constants.ts)
-- [types.ts](../../../code-examples/logger/pages/home/logger/types.ts)
-- [index.ts](../../../code-examples/logger/pages/home/logger/index.ts)
+- [전체 페이지 로거 구현](https://github.com/KIMSEUNGGYU/notes/tree/main/code-examples/logger/pages/home/logger)
+- [constants.ts](https://github.com/KIMSEUNGGYU/notes/blob/main/code-examples/logger/pages/home/logger/constants.ts)
+- [types.ts](https://github.com/KIMSEUNGGYU/notes/blob/main/code-examples/logger/pages/home/logger/types.ts)
+- [index.ts](https://github.com/KIMSEUNGGYU/notes/blob/main/code-examples/logger/pages/home/logger/index.ts)
 
 ---
 

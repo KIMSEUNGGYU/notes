@@ -2,7 +2,10 @@ import { execSync } from 'node:child_process';
 import { copyFileSync, cpSync, existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-const workspaces = ['best-practices', 'work-notes'];
+const workspaces = [
+  { name: 'best-practices', outputDir: 'frontend-docs' },
+  { name: 'work-notes', outputDir: 'work-notes' }
+];
 
 console.log('🚀 통합 빌드를 시작합니다...\n');
 
@@ -16,22 +19,22 @@ mkdirSync(distDir);
 
 // 각 워크스페이스 빌드
 for (const workspace of workspaces) {
-  console.log(`\n📦 ${workspace} 빌드 중...`);
+  console.log(`\n📦 ${workspace.name} 빌드 중...`);
   try {
-    execSync(`pnpm --filter ${workspace} build`, { stdio: 'inherit' });
+    execSync(`pnpm --filter ${workspace.name} build`, { stdio: 'inherit' });
 
-    const sourcePath = join('docs', workspace, '.vitepress', 'dist');
-    const targetPath = join(distDir, workspace);
+    const sourcePath = join('docs', workspace.name, '.vitepress', 'dist');
+    const targetPath = join(distDir, workspace.outputDir);
 
     if (existsSync(sourcePath)) {
-      console.log(`✅ ${workspace} → dist/${workspace}로 복사 중...`);
+      console.log(`✅ ${workspace.name} → dist/${workspace.outputDir}로 복사 중...`);
       cpSync(sourcePath, targetPath, { recursive: true });
     } else {
-      console.error(`❌ ${workspace} 빌드 결과를 찾을 수 없습니다: ${sourcePath}`);
+      console.error(`❌ ${workspace.name} 빌드 결과를 찾을 수 없습니다: ${sourcePath}`);
       process.exit(1);
     }
   } catch (error) {
-    console.error(`❌ ${workspace} 빌드 실패:`, error.message);
+    console.error(`❌ ${workspace.name} 빌드 실패:`, error.message);
     process.exit(1);
   }
 }
@@ -49,6 +52,6 @@ if (existsSync(publicIndexPath)) {
 console.log('\n✨ 빌드 완료!');
 console.log(`\n📂 빌드 결과: ${distDir}/`);
 console.log('   ├── index.html (루트 랜딩 페이지)');
-console.log('   ├── best-practices/');
+console.log('   ├── frontend-docs/');
 console.log('   └── work-notes/');
 console.log('\n💡 로컬 프리뷰: npx serve dist');
