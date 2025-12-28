@@ -3,7 +3,7 @@ title: FSD 아키텍처
 description: Layer 기반 체계적인 폴더 구조
 outline: deep
 draft: true
-todo: 
+todo:
  - 초안은 완성, 하지만 좀 더 정리하기
 ---
 
