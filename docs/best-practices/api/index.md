@@ -316,9 +316,17 @@ export class HttpClient {
 }
 
 export function isApiError(error: unknown): error is ApiError {
-  return error instanceof ApiError;
+  return error != null && typeof error === 'object' && (error as any)?.name === 'ApiError';
 }
 ```
+
+**왜 `instanceof` 대신 조건 체크를 사용하는가?**
+
+- **번들 스플리팅**: 클래스가 여러 청크에 중복 포함되면 다른 인스턴스로 인식
+- **프레임워크 경계**: Server/Client Component 간 직렬화 시 클래스 정보 손실
+- **실행 컨텍스트**: iframe, Web Worker 등에서 생성된 객체는 `instanceof` 실패
+
+구조적 타입 체크(`name` 속성 확인)는 이런 문제를 방지합니다.
 
 ---
 

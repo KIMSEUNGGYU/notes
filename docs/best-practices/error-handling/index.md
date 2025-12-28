@@ -219,7 +219,131 @@ if (!task) {
 
 ---
 
-## 3. React ErrorBoundary 패턴
+## 3. 에러 타입 가드 패턴
+
+### instanceof vs 구조적 타입 체크
+
+에러를 판별할 때 `instanceof` 대신 구조적 타입 체크를 사용하는 이유를 설명합니다.
+
+#### instanceof의 문제점
+
+```typescript
+// ❌ instanceof 사용 시 문제 발생 케이스
+export function isAppError(error: unknown): error is AppError {
+  return error instanceof AppError;
+}
+```
+
+**문제 상황:**
+
+1. **번들러 코드 스플리팅**
+   - 클래스가 여러 청크에 중복 포함되면 서로 다른 클래스 인스턴스로 인식
+   - Webpack, Vite 등의 번들러에서 코드 분할 시 발생
+
+```typescript
+// chunk-1.js에서 생성된 AppError
+const error1 = new AppError('Auth', 'message');
+
+// chunk-2.js에서 instanceof 체크
+if (error1 instanceof AppError) { // false! (다른 클래스 인스턴스)
+  // 이 블록이 실행되지 않음
+}
+```
+
+2. **프레임워크 경계**
+   - Next.js App Router의 Server/Client Component 간 데이터 전달
+   - 직렬화(JSON.stringify) 후 역직렬화하면 클래스 정보 손실
+
+```typescript
+// Server Component
+const error = new AppError('NotFound', 'message');
+return { error }; // 직렬화되어 클라이언트로 전송
+
+// Client Component
+function Page({ error }) {
+  if (error instanceof AppError) { // false! (일반 객체로 변환됨)
+    // 이 블록이 실행되지 않음
+  }
+}
+```
+
+3. **실행 컨텍스트 차이**
+   - iframe, Web Worker, 다른 window 객체 간 객체 전달
+   - 각 컨텍스트마다 별도의 전역 객체와 프로토타입 체인
+
+```typescript
+// 메인 윈도우
+const error = new AppError('Network', 'message');
+
+// iframe
+window.parent.postMessage(error, '*');
+
+// iframe 내부
+window.addEventListener('message', (event) => {
+  if (event.data instanceof AppError) { // false! (다른 window의 클래스)
+    // 이 블록이 실행되지 않음
+  }
+});
+```
+
+#### 구조적 타입 체크 (Duck Typing)
+
+```typescript
+// ✅ 안전한 방법 - 객체의 구조로 판별
+export function isAppError(error: unknown): error is AppError {
+  return error != null && typeof error === 'object' && (error as any)?.name === 'AppError';
+}
+
+export function isRedirectError(error: unknown): error is RedirectError {
+  return error != null && typeof error === 'object' && (error as any)?.name === 'RedirectError';
+}
+```
+
+**장점:**
+
+- **실행 컨텍스트 독립적**: 어디서 생성되었든 `name` 속성만 확인
+- **직렬화 안전**: JSON 변환 후에도 `name` 속성 유지
+- **번들 분할 안전**: 클래스 인스턴스가 달라도 속성으로 판별
+
+**체크 순서:**
+1. `error != null`: null/undefined 방어
+2. `typeof error === 'object'`: 객체 타입 확인
+3. `(error as any)?.name === 'AppError'`: name 속성으로 최종 판별
+
+#### 더 엄격한 체크가 필요한 경우
+
+특정 속성까지 확인하려면 더 상세한 체크를 추가할 수 있습니다.
+
+```typescript
+export function isAppError(error: unknown): error is AppError {
+  return (
+    error != null &&
+    typeof error === 'object' &&
+    (error as any)?.name === 'AppError' &&
+    'kind' in error &&
+    'message' in error
+  );
+}
+
+export function isRedirectError(error: unknown): error is RedirectError {
+  return (
+    error != null &&
+    typeof error === 'object' &&
+    (error as any)?.name === 'RedirectError' &&
+    'url' in error &&
+    typeof (error as any).url === 'string'
+  );
+}
+```
+
+**언제 사용?**
+- 외부 라이브러리나 서드파티 코드에서 에러 객체를 받을 때
+- 에러 객체가 네트워크를 통해 전달될 때
+- 타입 안정성이 매우 중요한 도메인 (금융, 결제 등)
+
+---
+
+## 4. React ErrorBoundary 패턴
 
 ### 일반 에러 처리 (GlobalErrorBoundary)
 
@@ -356,7 +480,7 @@ if (!is.string(taskId)) {
 
 ---
 
-## 4. React Query 에러 처리
+## 5. React Query 에러 처리
 
 ### 재시도 정책
 
