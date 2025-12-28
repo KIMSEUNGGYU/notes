@@ -1,6 +1,7 @@
-// 프로덕션 환경 체크
-const isProduction = process.env.NODE_ENV === 'production';
-
+// 환경 구분
+// PHASE: live (main 배포), dev (preview 배포), local (로컬 개발)
+// live 환경에서만 draft 숨김
+const isLive = process.env.PHASE === 'live';
 interface SidebarItem {
   text: string;
   link?: string;
@@ -13,8 +14,8 @@ interface SidebarItem {
  * sidebar 아이템이 draft인지 확인합니다
  */
 function shouldFilterItem(item: SidebarItem): boolean {
-  // 프로덕션이 아니면 모든 항목 표시
-  if (!isProduction) return false;
+  // live가 아니면 모든 항목 표시 (dev, local에서는 draft 표시)
+  if (!isLive) return false;
 
   // sidebar 객체의 draft 속성 체크
   return item.draft === true;
