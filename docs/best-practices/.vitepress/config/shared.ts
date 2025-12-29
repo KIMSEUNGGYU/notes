@@ -1,10 +1,11 @@
-import { defineConfig } from 'vitepress';
-
-// 프로덕션 환경 체크
-const isProduction = process.env.NODE_ENV === 'production';
+import { defineConfig, type UserConfig } from 'vitepress';
+import { getGoogleAnalyticsHead } from './ga';
+import { isProduction } from './phase';
 
 export const sharedConfig = defineConfig({
   lang: 'ko-KR',
+
+  head: isProduction ? getGoogleAnalyticsHead() : [],
 
   // 프로덕션에서 draft 페이지 제외
   transformPageData(pageData) {
@@ -71,7 +72,7 @@ export const sharedConfig = defineConfig({
   lastUpdated: true,
 });
 
-export function mergeConfig(override) {
+export function mergeConfig(override: UserConfig) {
   return defineConfig({
     ...sharedConfig,
     ...override,

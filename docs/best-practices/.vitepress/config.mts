@@ -1,11 +1,6 @@
-import { loadEnv } from 'vitepress';
 import { mergeConfig } from './config/shared';
+import { phase } from './config/phase';
 import { filterDraftFromSidebar } from './config/sidebar';
-
-// .env 파일과 Vercel 환경 변수 모두 읽기
-// Vercel 환경 변수 우선, 없으면 .env 파일 읽기
-const env = loadEnv('', process.cwd(), '');
-const phase = process.env.PHASE || env.PHASE;
 
 const sidebar = [
   {
