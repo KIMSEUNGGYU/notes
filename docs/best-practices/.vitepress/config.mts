@@ -6,18 +6,17 @@ import { filterDraftFromSidebar } from './config/sidebar';
 // Vercel 환경 변수 우선, 없으면 .env 파일 읽기
 const env = loadEnv('', process.cwd(), '');
 const phase = process.env.PHASE || env.PHASE;
-console.log('PHASE:', phase);
 
 const sidebar = [
   {
     text: '시작하기',
-    link: '/introduce',
+    link: '/introduce/',
   },
   {
     text: '좋은 코드란?',
     collapsed: false,
     items: [
-      { text: '좋은 코드란?', link: '/best-code' },
+      { text: '좋은 코드란?', link: '/best-code/' },
       {
         text: '부록 (추가예정)',
         collapsed: true,
@@ -43,7 +42,7 @@ const sidebar = [
   {
     text: 'API',
     link: '/api/',
-    draft: true,
+    // draft: true,
   },
   {
     text: '추가 예정',
@@ -61,14 +60,17 @@ export default mergeConfig({
   title: 'Frontend Docs',
   description: '프론트엔드 개발 경험 모음집',
 
-  base: '/frontend-docs/',
+  base: '/frontend-docs',
   outDir: '.vitepress/dist',
   srcDir: '.',
 
   themeConfig: {
     siteTitle: 'Frontend.zip',
 
-    nav: [{ text: '홈', link: '/' }],
+    nav: [
+      { text: '홈', link: '/' },
+      { text: '블로그', link: 'https://kimseunggyu.vercel.app/' },
+    ],
 
     sidebar: await filterDraftFromSidebar(sidebar, phase),
 

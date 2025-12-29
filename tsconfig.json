@@ -10,8 +10,17 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "types": ["node"]
+    "types": ["node"],
+    "allowJs": true,
+    "noEmit": true
   },
-  "include": ["docs/**/*.ts", "docs/**/*.mts", "docs/**/*.vue", "docs/**/*.md"],
+  "include": [
+    "docs/**/*.ts",
+    "docs/**/*.mts",
+    "docs/**/*.vue",
+    "docs/**/*.md",
+    "docs/best-practices/.vitepress/**/*",
+    "docs/work-notes/.vitepress/**/*"
+  ],
   "exclude": ["node_modules", "**/dist", "**/.vitepress/cache", "**/.vitepress/dist"]
 }
