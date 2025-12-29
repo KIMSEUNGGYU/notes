@@ -8,7 +8,7 @@
         :class="{ active: isActive(item.path) }"
         :data-tooltip="item.tooltip"
       >
-        <a :href="item.href" @click.prevent="handleNavigation(item.href)">
+        <a :href="item.href" :target="item.target" @click.prevent="handleNavigation(item)">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { useRoute } from 'vitepress';
-import { NAVIGATION_ITEMS } from './NavigationItems';
+import { NAVIGATION_ITEMS, type NavItem } from './NavigationItems';
 
 const route = useRoute();
 
@@ -32,9 +32,13 @@ function isActive(path: string): boolean {
   return route.path.startsWith(path);
 }
 
-function handleNavigation(href: string): void {
+function handleNavigation(item: NavItem): void {
   if (typeof window !== 'undefined') {
-    window.location.href = href;
+    if (item.target === '_blank') {
+      window.open(item.href, '_blank');
+    } else {
+      window.location.href = item.href;
+    }
   }
 }
 </script>
