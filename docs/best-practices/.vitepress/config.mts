@@ -1,5 +1,5 @@
-import { mergeConfig } from './config/shared';
 import { phase } from './config/phase';
+import { mergeConfig } from './config/shared';
 import { filterDraftFromSidebar } from './config/sidebar';
 
 const sidebar = [
@@ -16,12 +16,12 @@ const sidebar = [
         text: '부록 (추가예정)',
         collapsed: true,
         items: [
-          { text: '프론트엔드에서 SOLID 원칙 (추가예정)', draft: true, },
-          { text: '선언적 프로그래밍 (추가예정)', draft: true, },
-          { text: '추상화 (추가예정)', draft: true, },
-          { text: '관심사의 분리 (추가예정)', draft: true, },
-          { text: '소프트웨어 공학 원칙 및 용어 (추가예정)', draft: true, },
-          { text: '인지과학기반 코드 잘 작성하기 (Toss) (추가예정)', draft: true, },
+          { text: '프론트엔드에서 SOLID 원칙 (추가예정)', draft: true },
+          { text: '선언적 프로그래밍 (추가예정)', draft: true },
+          { text: '추상화 (추가예정)', draft: true },
+          { text: '관심사의 분리 (추가예정)', draft: true },
+          { text: '소프트웨어 공학 원칙 및 용어 (추가예정)', draft: true },
+          { text: '인지과학기반 코드 잘 작성하기 (Toss) (추가예정)', draft: true },
         ],
       },
     ],
@@ -30,14 +30,14 @@ const sidebar = [
     text: '아키텍처',
     collapsed: false,
     items: [
-      { text: 'Feature 기반 폴더 구조', link: '/folder-structure/feature-based' },
-      { text: 'FSD 아키텍처', link: '/folder-structure/fsd-architecture' },
+      { text: 'Feature 기반 폴더 구조', link: '/folder-structure/feature-based', draft: true },
+      { text: 'FSD 아키텍처', link: '/folder-structure/fsd-architecture', draft: true },
     ],
   },
   {
     text: 'API',
     link: '/api/',
-    // draft: true,
+    draft: true,
   },
   {
     text: '추가 예정',
