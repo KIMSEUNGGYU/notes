@@ -13,7 +13,8 @@ features:
   - icon: 💎
     title: 좋은 코드란?
     details: 변경에 유연하고 읽기 쉬운 코드 작성 원칙
-  - icon: 🏗️
-    title: 아키텍처
-    details: Feature 기반 폴더 구조와 FSD 아키텍처 가이드
+    link: /introduce/
+  # - icon: 🏗️
+  #   title: 아키텍처
+  #   details: Feature 기반 폴더 구조와 FSD 아키텍처 가이드
 ---
