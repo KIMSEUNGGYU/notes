@@ -11,9 +11,9 @@ outline: 2
 소프트웨어는 계속 변합니다.  
 기획이 바뀌고, 요구사항이 추가되고, 버그를 수정합니다.
 
-그래서 저는 **좋은 코드는 변경에 용이한 코드**라고 생각하고, **유지보수가 좋은 코드란 변경에 용이한 코드**라고 생각합니다.
+그래서 저는 **좋은 코드는 변경에 용이한 코드**라고 생각하고, **유지보수가 좋은 코드 또한 변경에 용이한 코드**라고 생각합니다.
 
-변경에 용이한 코드를 만들기 위해 SOLID, SRP, 디자인 패턴과 같은 소프트웨어 개발 원칙과 방법론이 등장했다고 봅니다.
+변경에 용이한 코드를 위해 SOLID, SRP, 디자인 패턴과 같은 소프트웨어 개발 원칙과 방법론이 등장했다고 생각합니다.
 
 이 글에서 소개하는 원칙들은 서로 연결되어 있고, 때로는 충돌하기도 합니다. 예를 들어 응집도를 높이려다 보면 SRP를 위반할 수 있고, 추상화를 하려다 보면 가독성이 떨어질 수 있죠.
 
@@ -51,8 +51,6 @@ export const ROUTES = {
 <Link to={ROUTES.userDetail('456')}>편집</Link>
 navigate(ROUTES.userDetail(id))
 ```
-
----
 
 ## 2. SSOT (Single Source of Truth)
 
@@ -98,7 +96,6 @@ fetch(API.users.list())
 axios.get(API.users.detail('123'))
 ```
 
----
 
 ## 3. SRP (단일 책임 원칙)
 
@@ -150,7 +147,6 @@ function UserProfileContainer() {
 }
 ```
 
----
 
 ## 4. 응집도↑ 결합도↓ + 관심사의 분리
 
@@ -225,7 +221,6 @@ function useUserData() {
 응집도와 관심사 분리 개념은 폴더 구조 설계에도 적용됩니다. 자세한 내용은 [Feature 기반 폴더 구조](/folder-structure/feature-based)를 참고하세요.
 ::: 
 
----
 
 ## 5. 추상화
 
@@ -296,7 +291,6 @@ async function fetchUser() {
 // 나중에 패턴이 명확해지면 그때 추상화
 ```
 
----
 
 ## 6. 선언적 프로그래밍
 
@@ -346,7 +340,6 @@ function UserProfile() {
 </ErrorBoundary>
 ```
 
----
 
 ## 7. 가독성
 
@@ -379,8 +372,6 @@ function calculateTotalPrice(user) {
   return basePrice - discount;
 }
 ```
-
----
 
 ## 8. 의존성
 
