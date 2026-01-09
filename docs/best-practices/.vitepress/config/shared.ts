@@ -14,6 +14,35 @@ export const sharedConfig = defineConfig({
     }
   },
 
+  transformHead({ pageData, siteConfig }) {
+    const head: Array<[string, Record<string, string>]> = [];
+    const base = siteConfig.site.base.replace(/\/$/, '');
+
+    // favicon
+    head.push(['link', { rel: 'icon', href: `${base}/favicon.ico` }]);
+
+    const title = pageData.frontmatter.title || pageData.title || siteConfig.site.title;
+    const description =
+      pageData.frontmatter.description || pageData.description || siteConfig.site.description;
+    const pagePath = pageData.relativePath.replace(/index\.md$/, '').replace(/\.md$/, '');
+    const url = `https://seunggyu.vercel.app${base}/${pagePath}`.replace(/\/+$/, '');
+    const image = pageData.frontmatter.image || `https://seunggyu.vercel.app${base}/og-image.png`;
+
+    head.push(['meta', { property: 'og:title', content: title }]);
+    head.push(['meta', { property: 'og:description', content: description }]);
+    head.push(['meta', { property: 'og:url', content: url }]);
+    head.push(['meta', { property: 'og:image', content: image }]);
+    head.push(['meta', { property: 'og:type', content: 'article' }]);
+    head.push(['meta', { property: 'og:site_name', content: siteConfig.site.title }]);
+
+    head.push(['meta', { name: 'twitter:card', content: 'summary_large_image' }]);
+    head.push(['meta', { name: 'twitter:title', content: title }]);
+    head.push(['meta', { name: 'twitter:description', content: description }]);
+    head.push(['meta', { name: 'twitter:image', content: image }]);
+
+    return head;
+  },
+
   themeConfig: {
     // 검색 기능
     search: {

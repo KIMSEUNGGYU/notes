@@ -57,7 +57,7 @@ export default mergeConfig({
 
   base: '/frontend-docs',
   outDir: '.vitepress/dist',
-  srcDir: '.',
+  srcDir: 'content',
 
   themeConfig: {
     siteTitle: 'Frontend.zip',
