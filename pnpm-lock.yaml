@@ -57,7 +57,7 @@ importers:
         specifier: 'catalog:'
         version: 3.5.25(typescript@5.9.3)
 
-  docs/work-notes:
+  docs/dev-sillok:
     devDependencies:
       vitepress:
         specifier: 'catalog:'
