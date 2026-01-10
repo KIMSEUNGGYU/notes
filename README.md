@@ -185,3 +185,13 @@ pnpm preview
 ## 📝 라이선스
 
 MIT
+
+
+## TODO
+- wiki 프로젝트 만들기 
+  - 토스 실록 + typescript, git, 등등 만들기
+- frontend ops 프로젝트 만들기
+  - webpack, babel 내용 정리 및 실습 했던 내용들 
+  - code scaffolding 도 괜찮을듯! 
+  - A/B 테스트?
+  - 
