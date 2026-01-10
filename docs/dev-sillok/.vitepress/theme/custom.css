@@ -1,0 +1,18 @@
+/* 좌측 네비게이션을 위한 여백 */
+.VPNav,
+.VPSidebar,
+.VPContent,
+.VPDoc {
+  margin-left: 64px;
+}
+
+/* 모바일에서는 상단 네비게이션을 위한 여백 */
+@media (max-width: 768px) {
+  .VPNav,
+  .VPSidebar,
+  .VPContent,
+  .VPDoc {
+    margin-left: 0;
+    margin-top: 64px;
+  }
+}
