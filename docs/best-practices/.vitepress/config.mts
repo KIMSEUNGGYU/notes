@@ -46,7 +46,7 @@ const sidebar = [
   },
   {
     text: '추가 예정',
-    collapsed: false,
+    collapsed: true,
     items: [
       { text: 'React Query 패턴', draft: true },
       { text: '에러 핸들링', draft: true },
