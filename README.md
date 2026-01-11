@@ -194,4 +194,14 @@ MIT
   - webpack, babel 내용 정리 및 실습 했던 내용들 
   - code scaffolding 도 괜찮을듯! 
   - A/B 테스트?
-  - 
+- api 실전 코드를 `code-examples` 에 추가하기 
+
+### 베스트 템플릿 컨텐츠 내용 
+- [x] 좋은 코드란?
+- [x] folder-structure - 완료 - 배포전
+- [x] api - 완료 - 배포전
+- [ ] react-query
+- [ ] error-handling
+- [ ] form 
+- [ ] logger
+
