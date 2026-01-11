@@ -218,7 +218,7 @@ function useUserData() {
 ```
 
 ::: tip 폴더 구조에 적용하기
-응집도와 관심사 분리 개념은 폴더 구조 설계에도 적용됩니다. 자세한 내용은 [Feature 기반 폴더 구조](/folder-structure/feature-based)를 참고하세요.
+응집도와 관심사 분리 개념은 폴더 구조 설계에도 적용됩니다. 자세한 내용은 [지역성 기반 폴더 구조](/folder-structure/locality-based)를 참고하세요.
 ::: 
 
 

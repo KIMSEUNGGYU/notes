@@ -30,7 +30,7 @@ const sidebar = [
     text: '아키텍처',
     collapsed: false,
     items: [
-      { text: 'Feature 기반 폴더 구조', link: '/folder-structure/feature-based', draft: true },
+      { text: '지역성 기반 폴더 구조', link: '/folder-structure/locality-based', draft: true },
       { text: 'FSD 아키텍처', link: '/folder-structure/fsd-architecture', draft: true },
     ],
   },
