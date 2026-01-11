@@ -44,16 +44,16 @@ const sidebar = [
       { text: 'VO 클래스 패턴', link: '/api/vo-pattern', draft: true },
     ],
   },
-  {
-    text: '추가 예정',
-    collapsed: false,
-    items: [
-      { text: 'React Query 패턴', link: '/react-query/', draft: true },
-      { text: '에러 핸들링', link: '/error-handling/', draft: true },
-      { text: 'Logger 패턴', link: '/logger/', draft: true },
-      { text: 'form 관리', draft: true },
-    ],
-  },
+  // {
+  //   text: '추가 예정',
+  //   collapsed: false,
+  //   items: [
+  //     { text: 'React Query 패턴', link: '/react-query/', draft: true },
+  //     { text: '에러 핸들링', link: '/error-handling/', draft: true },
+  //     { text: 'Logger 패턴', link: '/logger/', draft: true },
+  //     { text: 'form 관리', draft: true },
+  //   ],
+  // },
 ];
 
 export default mergeConfig({
