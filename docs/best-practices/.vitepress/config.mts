@@ -36,8 +36,13 @@ const sidebar = [
   },
   {
     text: 'API',
-    link: '/api/',
-    draft: true,
+    collapsed: false,
+    items: [
+      { text: 'API 함수 작성 패턴', link: '/api/api-function-pattern', draft: true },
+      { text: 'API Client 정의', link: '/api/api-client', draft: true },
+      { text: 'API 에러 처리', link: '/api/api-error-handling', draft: true },
+      { text: 'VO 클래스 패턴', link: '/api/vo-pattern', draft: true },
+    ],
   },
   {
     text: '추가 예정',
