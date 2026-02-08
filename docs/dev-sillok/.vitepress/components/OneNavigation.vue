@@ -2,7 +2,7 @@
   <div class="one-navigation">
     <div class="nav-items">
       <div
-        v-for="item in NAVIGATION_ITEMS"
+        v-for="item in navItems"
         :key="item.path"
         class="nav-item"
         :class="{ active: isActive(item.path) }"
@@ -26,7 +26,11 @@
 import { useRoute } from 'vitepress';
 import { NAVIGATION_ITEMS, type NavItem } from './NavigationItems';
 
+declare const __PHASE__: string;
+
 const route = useRoute();
+
+const navItems = NAVIGATION_ITEMS.filter((item) => !item.draft || __PHASE__ !== 'live');
 
 function isActive(path: string): boolean {
   return route.path.startsWith(path);

@@ -74,6 +74,12 @@ export default mergeConfig({
   outDir: '.vitepress/dist',
   srcDir: 'content',
 
+  vite: {
+    define: {
+      __PHASE__: JSON.stringify(phase),
+    },
+  },
+
   themeConfig: {
     siteTitle: 'Frontend.zip',
 

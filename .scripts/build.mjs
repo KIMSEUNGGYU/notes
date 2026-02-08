@@ -1,6 +1,16 @@
 import { execSync } from 'node:child_process';
-import { copyFileSync, cpSync, existsSync, mkdirSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+
+// .env 파일 로드 (워크스페이스 빌드 시 환경변수 전달용)
+if (existsSync('.env')) {
+  for (const line of readFileSync('.env', 'utf8').split('\n')) {
+    const match = line.match(/^(\w+)=(.*)$/);
+    if (match && !process.env[match[1]]) {
+      process.env[match[1]] = match[2].trim();
+    }
+  }
+}
 
 const workspaces = [
   { name: 'best-practices', outputDir: 'frontend-docs' },
