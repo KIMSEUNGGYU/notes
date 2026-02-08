@@ -7,6 +7,14 @@ const sidebar = [
     text: '시작하기',
     link: '/getting-started/',
   },
+  {
+    text: 'AI',
+    collapsed: false,
+    items: [
+      { text: 'Claude Code 플러그인 — 4가지 컴포넌트', link: '/ai/plugin-components', draft: true },
+      { text: 'Claude Code 플러그인 — 오케스트레이션 패턴', link: '/ai/orchestration-patterns', draft: true },
+    ],
+  },
 ];
 
 export default mergeConfig({
