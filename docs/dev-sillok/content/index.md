@@ -9,8 +9,12 @@ hero:
       text: 시작하기
       link: /getting-started/
 features:
-  - icon: 📚
-    title: 문서
-    details: 문서 설명
-    link: /getting-started/
+  # - icon: 📚
+  #   title: 문서
+  #   details: 문서 설
+  #   link: /getting-started/
+  - icon: 🤖
+    title: AI
+    details: AI 이것 저것
+    link: /ai/plugin-components/
 ---
