@@ -45,10 +45,17 @@ const sidebar = [
     text: 'API',
     collapsed: false,
     items: [
-      { text: 'API 함수 작성 패턴', link: '/api/api-function-pattern', draft: true },
-      { text: 'API Client 정의', link: '/api/api-client', draft: true },
-      { text: 'API 에러 처리', link: '/api/api-error-handling', draft: true },
-      { text: 'VO 클래스 패턴', link: '/api/vo-pattern', draft: true },
+      { text: 'API 함수 작성 패턴', link: '/api' },
+      {
+        text: '부록 ',
+        collapsed: true,
+        items: [
+          { text: 'API 함수 작성 패턴', link: '/api/api-function-pattern' },
+          { text: 'API Client 정의', link: '/api/api-client', draft: true },
+          { text: 'API 에러 처리', link: '/api/api-error-handling', draft: true },
+          { text: 'VO 클래스 패턴', link: '/api/vo-pattern', draft: true },
+        ],
+      },
     ],
   },
   {
