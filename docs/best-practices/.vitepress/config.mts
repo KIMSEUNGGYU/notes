@@ -59,11 +59,14 @@ const sidebar = [
     ],
   },
   {
+    text: '에러 핸들링',
+    link: '/error-handling/',
+  },
+  {
     text: '추가 예정',
     collapsed: true,
     items: [
       { text: 'React Query 패턴', draft: true },
-      { text: '에러 핸들링', draft: true },
       { text: 'Logger 패턴', draft: true },
       { text: 'form 관리', draft: true },
     ],
