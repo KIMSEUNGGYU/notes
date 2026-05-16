@@ -31,7 +31,14 @@ const sidebar = [
     collapsed: false,
     items: [
       { text: '지역성 기반 폴더 구조', link: '/folder-structure/locality-based' },
-      { text: 'FSD 아키텍처', link: '/folder-structure/fsd-architecture' },
+      {
+        text: '부록 ',
+        collapsed: true,
+        items: [
+          { text: 'FSD 아키텍처', link: '/folder-structure/fsd-architecture' },
+        ],
+      },
+
     ],
   },
   {
