@@ -1,126 +1,317 @@
 ---
 title: Logger 패턴
-description: Phase별 자동 전환되는 로거 시스템
+description: 환경별 구현 + combineLoggers 합성으로 단일 인터페이스 제공
 outline: deep
 ---
 
 # Logger 패턴
 
-## 개요
+> 환경별로 다른 로거를 따로 만들고 `combineLoggers`로 합성해 **사용처에는 단일 `Logger` 인터페이스**만 노출하는 패턴.
 
-사용자 행동 분석을 위한 이벤트 로깅 시스템. Phase별로 자동 전환되고, 타입 안전성을 보장한다.
+> **두 트랙으로 구성**
+> - **메인 (이 문서)** = **인프라 구축 트랙** — 한 번 갖춰두면 끝 (5개 필수 + 1개 선택)
+> - **[부록](./usage)** = **페이지별 사용 트랙** — 페이지 추가될 때마다 반복
 
-**해결하는 문제**
-- 환경마다 다른 로깅 방식 (local은 콘솔, live는 GA)
-- 반복되는 공통 필드 전달 (`device`, `page_type`)
-- 오타로 인한 잘못된 이벤트 전송
-- 페이지별 이벤트 타입 불일치
+## 무엇을 해결하나
+
+**❌ 기존 방식 — 호출부가 모든 걸 채워야 함**
+
+```tsx
+<button onClick={() => {
+  window.dataLayer?.push({
+    event: 'click_interaction',
+    device: window.innerWidth > 640 ? 'pcweb' : 'moweb', // 매번 직접 계산
+    page_type: 'home',                                    // 매번 직접 입력
+    section_type: 'gnb',                                  // 자유 문자열 — 오타 가능
+    label: '상담',                                        // 자유 문자열 — 오타 가능
+  });
+}}>상담</button>
+```
+
+| 문제                                     | 결과                                            |
+| ---------------------------------------- | ----------------------------------------------- |
+| `device`/`page_type` 계산 호출부마다 반복 | 누락/실수 → 집계 누락                          |
+| `section_type`/`label`이 자유 문자열      | 같은 버튼이 여러 키로 흩어져 GA 집계 깨짐      |
+| phase별 분기를 호출부가 알아야 함        | local에서 GA 오염, 환경 분기 코드 흩어짐       |
+
+**✅ 패턴 적용 — 호출부는 `section_type`/`label`만**
+
+```tsx
+<button onClick={() => {
+  pageLogger.logClick({
+    section_type: SECTION_TYPE.GNB, // enum — 오타 시 컴파일 에러
+    label: LABEL.상담,               // enum — 오타 시 컴파일 에러
+  });
+}}>상담</button>
+```
+
+- `device`, `page_type` 자동 주입
+- `SECTION_TYPE` / `LABEL` enum으로 잠금 → 오타 차단
+- phase 분기는 `makeLogger`가 처리 (local=콘솔만, dev=둘 다, live=GA만)
+
+## 핵심 아이디어
+
+**구성 다이어그램**
+
+```
+         Logger (인터페이스)
+              ▲
+   ┌──────────┼──────────────┐
+ConsoleLogger GALogger  combineLoggers
+   └──────────┬──────────────┘
+              │
+      makeLogger (Phase 분기)
+              │
+              ▼
+         pageLogger (사용처)
+```
+
+**구성 요소 5가지 — 코드 없이 한눈에**
+
+| 이름                | 한 줄 설명                                              |
+| ------------------- | ------------------------------------------------------- |
+| `Logger`            | 모두가 따르는 **단일 인터페이스** (계약)                |
+| `ConsoleLogger`     | 콘솔 출력 구현 (local/dev에서 사용)                     |
+| `GALogger`          | GA 전송 구현 (dev/live에서 사용)                        |
+| `combineLoggers` ⭐ | 여러 Logger를 합쳐 단일 Logger로 (**핵심 추상화**)      |
+| `makeLogger`        | Phase에 따라 위 구현체를 조합해 단일 `Logger` 반환     |
+
+**동작 원리**
+
+`Logger`는 단일 인터페이스. 환경별 구현(`ConsoleLogger`, `GALogger`)을 따로 만들고, **`combineLoggers`로 합성**해서 환경에 따라 다른 동작을 단일 인터페이스로 제공한다.
+
+- `local` → `ConsoleLogger`
+- `dev` → `ConsoleLogger` + `GALogger` (`combineLoggers`로 합성)
+- `live` → `GALogger`
+
+사용처는 항상 `Logger` 하나만 쓴다. 어떤 환경에서 어떻게 동작할지는 `makeLogger`가 결정.
+
+> **차별점** — 여러 로거를 합성해도 사용처는 단일 로거처럼 다룬다. 환경별 분기·합성을 사용처가 알 필요 없게 만드는 `combineLoggers` 추상화가 이 패턴의 핵심.
+
+**원칙 3가지**
+
+1. **단일 인터페이스 `Logger`** — 사용처는 환경/구현체 신경 X
+2. **환경별 구현체 분리 + `combineLoggers`로 합성** — 이 합성 추상화가 핵심
+3. **이벤트는 페이지 전용 상수/타입으로 강제** — 오타 방지, 도메인 한정 (→ [부록 §2 EventParams 정의](./usage#_2-eventparams-정의-da-요청-사항을-타입으로))
+
+각 패턴은 다음 형식:
+
+```
+언제 쓰나   — 적용 상황
+적용 위치   — 코드베이스 폴더/계층
+템플릿      — 복붙 가능한 베스트 코드
+왜          — 근거
+주의        — 함정 (선택)
+```
+
+## Phase ↔ Logger 구현 매칭
+
+| Phase   | 동작                       | 용도                  |
+| ------- | -------------------------- | --------------------- |
+| `local` | `ConsoleLogger`만          | 개발 디버깅 (콘솔만)  |
+| `dev`   | `combineLoggers(Console, GA)` | 디버깅 + 분석 둘 다   |
+| `live`  | `GALogger`만               | 프로덕션 분석만       |
+
+코드 변경 없이 환경변수(Phase)만으로 로거가 전환된다.
+
 
 ---
 
-## 1. 기본 로거
+# 모델 패턴
 
-### Logger란?
+## 01. Logger 인터페이스 — 단일 추상화
 
-사용자 행동을 추적해서 Google Analytics 같은 분석 도구로 전송하는 객체.
+**언제 쓰나** — 로거 시스템의 출발점. 모든 구현체와 사용처가 이 인터페이스만 의존
+
+**적용 위치** — `src/lib/logger/types.ts`
+
+**템플릿**
 
 ```typescript
-interface Logger {
+export interface LoggerParams {
+  device?: Device;
+  page_type?: string;
+  [key: string]: unknown;
+}
+
+export interface EventParams {
+  section_type: string;
+  label: string;
+}
+
+export interface Logger<TEventParams extends EventParams = EventParams> {
   log(name: string, params?: LoggerParams): void;
-  logClick(params: EventParams): void;
+  logClick(params: TEventParams): void;
 }
 ```
 
-- `log`: 범용 이벤트 전송 (페이지뷰, 스크롤 등)
-- `logClick`: 클릭 이벤트 전송 (버튼, 링크 등)
+**`LoggerParams` vs `EventParams` — 누가 채우나**
 
-### 사용 방법
+| 타입            | 누가 채우나                  | 무엇                                                       |
+| --------------- | ---------------------------- | ---------------------------------------------------------- |
+| `LoggerParams`  | **인프라가 자동 주입**       | 모든 이벤트 공통 (`device`, `page_type` 등)                |
+| `EventParams`   | **DA가 요청한 분석 스펙**    | 이벤트마다 채워야 할 분석 필드 (`section_type`, `label` 등) |
 
-```typescript
-// 1. 로거 생성 (page_type은 모든 이벤트에 자동 포함)
-const logger: Logger = {
-  log(name, params) {
-    // device 자동 감지 + page_type 병합 후 전송
-    sendToAnalytics({ event: name, device: getDevice(), page_type: 'home', ...params });
-  },
-  logClick(params) {
-    this.log('click_interaction', params);
-  },
-};
+- `LoggerParams`는 환경/페이지 단위로 한 번 결정되어 자동 합성 — 호출부가 신경 X
+- `EventParams`는 클릭 시점에 컴포넌트가 직접 채움 — 페이지별로 `extends EventParams`로 확장해 도메인 한정 타입 강제 ([부록 §2](./usage#_2-eventparams-정의-da-요청-사항을-타입으로))
 
-// 2. 클릭 이벤트 전송
-logger.logClick({
-  section_type: 'header',
-  label: '로그인 버튼',
-});
-```
+**왜**
 
-실제로는 `makeLogger({ page_type: 'home' })`로 생성하지만, 내부적으로 위와 같은 객체를 반환한다.
-
-### 전송되는 데이터
-
-```javascript
-{
-  event: 'click_interaction',
-  device: 'pcweb',           // 자동 감지
-  page_type: 'home',         // makeLogger에서 설정
-  section_type: 'header',    // logClick에서 전달
-  label: '로그인 버튼'        // logClick에서 전달
-}
-```
-
-**필드 출처**
-> 각 회사별 데이터 로깅 속성마다 다름
-
-- `device`: 자동 감지 (PC/모바일 구분)
-- `page_type`: 로거 생성 시 고정 (페이지 구분)
-- `section_type`, `label`: 이벤트 발생 시마다 전달 (클릭 위치)
-
-**핵심**: `makeLogger`로 한 번 생성하면, `device`와 `page_type`은 매번 전달할 필요 없다.
-
-### 타입 안전성 추가
-
-문자열 직접 입력 시 오타 발생 → 상수로 정의하고 타입 강제
-
-```typescript
-// 1. 상수 정의
-const SECTION_TYPE = {
-  HEADER: 'header',
-  FOOTER: 'footer',
-} as const;
-
-const LABEL = {
-  로그인_버튼: '로그인 버튼',
-  회원가입_버튼: '회원가입 버튼',
-} as const;
-
-// 2. 타입 정의
-type MyEventParams = {
-  section_type: typeof SECTION_TYPE[keyof typeof SECTION_TYPE];
-  label: typeof LABEL[keyof typeof LABEL];
-};
-
-// 3. 로거 생성
-const logger = makeLogger<MyEventParams>({ page_type: 'home' });
-
-// 4. 사용 - IDE 자동완성, 잘못된 값 입력 시 컴파일 에러
-logger.logClick({
-  section_type: SECTION_TYPE.HEADER,
-  label: LABEL.로그인_버튼,
-});
-```
+- 사용처는 단일 인터페이스만 의존 → 구현체 교체 영향 없음
+- `log` — 범용 이벤트 (페이지뷰, 스크롤 등)
+- `logClick` — 클릭 이벤트 전용 (제네릭으로 페이지별 타입 강제)
+- 환경별 구현체(`ConsoleLogger`, `GALogger`)는 모두 이 형태를 따름
 
 ---
 
-## 2. 환경별 로거
+# 환경별 구현 패턴
 
-### makeLogger - Phase별 자동 전환
+## 02. ConsoleLogger — 개발 환경 구현
 
-로컬은 콘솔만, 프로덕션은 GA만, 개발은 둘 다.
+**언제 쓰나** — local/dev Phase에서 콘솔로 시각 확인이 필요할 때
+
+**적용 위치** — `src/lib/logger/ConsoleLogger.ts`
+
+**템플릿**
 
 ```typescript
+import { getDevice } from './utils';
+import type { Logger, LoggerParams, EventParams, MakeLoggerOptions } from './types';
+
+export class ConsoleLogger<TEventParams extends EventParams = EventParams>
+  implements Logger<TEventParams>
+{
+  constructor(private readonly baseParams: MakeLoggerOptions) {}
+
+  private getBaseParams(params?: LoggerParams): LoggerParams {
+    return {
+      device: getDevice(),    // 런타임에 PC/모바일 감지
+      ...this.baseParams,     // page_type + 커스텀 필드
+      ...params,              // 호출 시 전달된 파라미터
+    };
+  }
+
+  log(name: string, params?: LoggerParams) {
+    console.table({ event: name, ...this.getBaseParams(params) });
+  }
+
+  logClick(params: TEventParams) {
+    this.log('click_interaction', params);
+  }
+}
+```
+
+**왜**
+
+- `console.table`로 이벤트 시각화 → 개발자 도구에서 한눈에
+- `getBaseParams`가 필드 병합 담당 (나중 필드가 이전 값을 덮어쓰는 spread 순서)
+- 클래스라 인스턴스마다 `baseParams` 격리
+- **local Phase에서 GA 오염 방지** — 개발 중 콘솔만 켜면 실제 GA 분석 데이터에 노이즈가 들어가지 않음
+
+---
+
+## 03. GALogger — 프로덕션 구현
+
+**언제 쓰나** — dev/live Phase에서 Google Analytics로 실제 전송
+
+**적용 위치** — `src/lib/logger/GALogger.ts`
+
+**템플릿**
+
+```typescript
+export class GALogger<TEventParams extends EventParams = EventParams>
+  implements Logger<TEventParams>
+{
+  constructor(private readonly baseParams: MakeLoggerOptions) {}
+
+  private getBaseParams(params?: LoggerParams): LoggerParams {
+    return {
+      device: getDevice(),
+      ...this.baseParams,
+      ...params,
+    };
+  }
+
+  log(name: string, params?: LoggerParams) {
+    // SSR 대응 — window/dataLayer 없으면 조용히 무시
+    if (typeof window === 'undefined' || !window.dataLayer) return;
+
+    window.dataLayer.push({
+      event: name,
+      ...this.getBaseParams(params),
+    });
+  }
+
+  logClick(params: TEventParams) {
+    this.log('click_interaction', params);
+  }
+}
+```
+
+**왜**
+
+- `window.dataLayer.push`로 GA4 이벤트 전송 (GTM 연동)
+- **SSR 가드** — `window` 없거나 `dataLayer` 없으면 조용히 무시 → 서버 렌더링 에러 없음
+- `ConsoleLogger`와 동일한 `Logger` 인터페이스 → 사용처 동일
+
+**주의** — `dataLayer`는 GTM 스니펫이 먼저 로드되어야 존재. 스크립트 로드 타이밍에 따라 초기 이벤트가 유실될 수 있으니 critical 이벤트는 hydration 후 발사.
+
+---
+
+## 04. combineLoggers — 다중 로거 결합 ⭐ (핵심 추상화)
+
+**언제 쓰나** — 환경에 따라 여러 로거를 동시에 사용해야 할 때 (`dev` Phase에서 Console과 GA를 함께)
+
+**적용 위치** — `src/lib/logger/combineLoggers.ts`
+
+**템플릿**
+
+```typescript
+import type { Logger, EventParams } from './types';
+
+export function combineLoggers<TEventParams extends EventParams = EventParams>(
+  ...loggers: Logger<TEventParams>[]
+): Logger<TEventParams> {
+  return {
+    log(name, params) {
+      loggers.forEach(logger => logger.log(name, params));
+    },
+    logClick(params) {
+      loggers.forEach(logger => logger.logClick(params));
+    },
+  };
+}
+```
+
+**왜 — 이 패턴의 핵심 추상화**
+
+- 동일한 `Logger` 인터페이스를 반환 → **여러 로거를 합성해도 사용처는 단일 로거처럼 사용**
+- `dev`에서 Console+GA를 동시에 보낼 수 있는 이유 (사용처는 둘이 합쳐진 줄 모름)
+- N개 로거 결합 가능 (Console + GA + Amplitude + 자체 분석 도구 등)
+- **새 분석 도구(Mixpanel 등) 추가 시 호출부는 0줄 변경** — 새 `Logger` 구현체 만들고 `combineLoggers` 인자에 추가하면 끝 (자세히는 [부록 §5](./usage#_5-확장-새-분석-도구-추가-mixpanel-예시))
+- 환경별 분기는 `makeLogger`(§05)에 가두고 결합 로직은 여기에 분리
+
+> **이게 일반적인 logger 라이브러리에는 잘 없는 부분.** 보통은 라이브러리 안에 "여러 transport"가 박혀 있어 확장이 어려운데, `combineLoggers`로 빼면 새 도구 추가가 한 줄로 끝난다.
+
+---
+
+## 05. makeLogger — Phase 자동 전환
+
+**언제 쓰나** — 로거 생성 시 항상 이 팩토리만 호출. 환경별 분기를 사용처에 노출하지 않음
+
+**적용 위치** — `src/lib/logger/makeLogger.ts`
+
+**템플릿**
+
+```typescript
+import { getPhase } from '@/lib/env';
+import { ConsoleLogger } from './ConsoleLogger';
+import { GALogger } from './GALogger';
+import { combineLoggers } from './combineLoggers';
+import type { EventParams, Logger, MakeLoggerOptions } from './types';
+
 export function makeLogger<TEventParams extends EventParams = EventParams>(
-  options: MakeLoggerOptions
+  options: MakeLoggerOptions,
 ): Logger<TEventParams> {
   const phase = getPhase();
 
@@ -135,241 +326,46 @@ export function makeLogger<TEventParams extends EventParams = EventParams>(
 }
 ```
 
-| Phase | 동작 | 용도 |
-|-------|------|------|
-| `local` | ConsoleLogger만 | 개발 디버깅 |
-| `dev` | Console + GA | 디버깅 + 분석 |
-| `live` | GALogger만 | 프로덕션 분석 |
+**왜**
 
-코드 변경 없이 환경변수만으로 로거가 전환된다.
+- 사용처는 `makeLogger`만 호출 → Phase 분기를 한 곳에 가둠
+- 환경 추가 시 이 함수만 수정
+- 제네릭으로 페이지별 EventParams 타입 그대로 통과
+- `dev`에서는 `combineLoggers`(§04)로 합성한 단일 인터페이스 반환
+- **phase를 직접 읽음 (DI 아님)** — phase는 빌드 환경에 의해 1회 결정되므로 런타임 주입 의미 없음. 호출부에서 phase를 모르도록 캡슐화하는 게 더 중요한 설계 목표
 
-### ConsoleLogger
+---
 
-개발 환경에서 `console.table`로 시각화.
+## 유틸리티
 
-```typescript
-export class ConsoleLogger implements Logger {
-  private getBaseParams(params?: LoggerParams): LoggerParams {
-    return {
-      device: getDevice(),      // 런타임에 PC/모바일 감지
-      ...this.baseParams,       // page_type + 커스텀 필드
-      ...params,                // 호출 시 전달된 파라미터
-    };
-  }
+### getDevice
 
-  log(name: string, params?: LoggerParams) {
-    console.table({ event: name, ...this.getBaseParams(params) });
-  }
-}
-```
+> 패턴은 아니고 utility. `LoggerParams.device`를 자동 주입하기 위한 헬퍼.
 
-`getBaseParams`가 필드 병합을 담당. 나중 필드가 이전 값을 덮어쓴다.
-
-[전체 코드 보기](https://github.com/KIMSEUNGGYU/notes/blob/main/code-examples/logger/lib/logger/ConsoleLogger.ts)
-
-### GALogger
-
-프로덕션 환경에서 Google Analytics 4로 전송.
+**적용 위치** — `src/lib/logger/utils.ts`
 
 ```typescript
-export class GALogger implements Logger {
-  log(name: string, params?: LoggerParams) {
-    if (typeof window === 'undefined' || !window.dataLayer) {
-      return;
-    }
+import { BREAKPOINTS } from '@/lib/constants';
 
-    window.dataLayer.push({
-      event: name,
-      ...this.getBaseParams(params),
-    });
-  }
-}
-```
+export const DEVICE = {
+  PC_WEB: 'pcweb',
+  MOBILE_WEB: 'mweb',
+} as const;
 
-**SSR 대응**: `window` 없거나 `dataLayer` 없으면 조용히 무시. 에러 발생 안 함.
+export type Device = (typeof DEVICE)[keyof typeof DEVICE];
 
-[전체 코드 보기](https://github.com/KIMSEUNGGYU/notes/blob/main/code-examples/logger/lib/logger/GALogger.ts)
-
-### combineLoggers
-
-여러 로거를 하나로 묶는다. `dev` Phase에서 Console + GA 동시 사용.
-
-```typescript
-export function combineLoggers(...loggers: Logger[]): Logger {
-  return {
-    log(name, params) {
-      loggers.forEach(logger => logger.log(name, params));
-    },
-    logClick(params) {
-      loggers.forEach(logger => logger.logClick(params));
-    },
-  };
-}
-```
-
-동일한 `Logger` 인터페이스 반환 → 사용처는 단일 로거처럼 사용.
-
-[전체 코드 보기](https://github.com/KIMSEUNGGYU/notes/blob/main/code-examples/logger/lib/logger/combineLoggers.ts)
-
-### Device 자동 감지
-
-```typescript
 export function getDevice(): Device {
-  if (typeof window === 'undefined') return DEVICE.PC_WEB;
+  if (typeof window === 'undefined') return DEVICE.PC_WEB; // SSR 기본값
 
   const isPc = window.matchMedia(`(min-width: ${BREAKPOINTS.mobile + 1}px)`).matches;
   return isPc ? DEVICE.PC_WEB : DEVICE.MOBILE_WEB;
 }
 ```
 
-- SSR: `pcweb` 기본값
-- 클라이언트: `matchMedia`로 뷰포트 감지
-- 로그 전송할 때마다 호출 → 항상 최신 값
-
-[전체 코드 보기](https://github.com/KIMSEUNGGYU/notes/blob/main/code-examples/logger/lib/logger/utils.ts)
+- SSR에선 `pcweb` 기본값으로 안전 fallback
+- 클라이언트에선 `matchMedia`로 뷰포트 감지
+- **매 이벤트 발사 시점**에 호출 — 모듈 로드 시 캐시(`const device = getDevice()`)하면 화면 회전 같은 변화를 못 따라간다
 
 ---
 
-## 3. 실전 활용 사례
-
-실제 프로젝트에서는 페이지마다 별도 로거 디렉토리를 만들어 관리한다.
-
-**전체 코드**: [code-examples/logger](https://github.com/KIMSEUNGGYU/notes/tree/main/code-examples/logger)
-
-### 디렉토리 구조
-
-```
-pages/
-  home/
-    logger/
-      constants.ts    # SECTION_TYPE, LABEL 상수
-      types.ts        # HomeEventParams 타입
-      index.ts        # homeLogger 인스턴스
-    PCSection6.tsx    # 실제 사용
-```
-
-### constants.ts
-
-페이지에서 사용하는 모든 section과 label 정의.
-
-```typescript
-export const SECTION_TYPE = {
-  GNB: 'gnb',
-  CTA: 'cta',
-  사장님_이야기: '사장님 이야기',
-  더_알아보기: '더 알아보기',
-} as const;
-
-export const LABEL = {
-  GNB_프로모션: '프로모션',
-  구매_상담_신청하기: '구매 상담 신청하기',
-  더_알아보기_프론트: '프론트',
-  더_알아보기_태블릿_세트: '태블릿 세트',
-} as const;
-```
-
-### types.ts
-
-상수 기반 타입 생성.
-
-```typescript
-import type { EventParams } from 'lib/logger';
-import type { LABEL, SECTION_TYPE } from './constants';
-
-export type SectionType = (typeof SECTION_TYPE)[keyof typeof SECTION_TYPE];
-export type Label = (typeof LABEL)[keyof typeof LABEL];
-
-export interface HomeEventParams extends EventParams {
-  section_type: SectionType;
-  label: Label;
-}
-```
-
-### index.ts
-
-페이지 전용 로거 인스턴스 생성.
-
-```typescript
-import { makeLogger } from 'lib/logger';
-import type { HomeEventParams } from './types';
-
-export { LABEL, SECTION_TYPE } from './constants';
-export type { HomeEventParams } from './types';
-
-export const homeLogger = makeLogger<HomeEventParams>({
-  page_type: 'main',
-});
-```
-
-### 컴포넌트에서 사용
-
-```tsx
-import { LABEL, SECTION_TYPE, homeLogger } from 'pages/home/logger';
-
-export function PCSection6() {
-  return (
-    <Button
-      onClick={() => {
-        homeLogger.logClick({
-          section_type: SECTION_TYPE.더_알아보기,
-          label: LABEL.더_알아보기_프론트,
-        });
-      }}
-    >
-      더 알아보기
-    </Button>
-  );
-}
-```
-
-**전송 데이터**
-```javascript
-{
-  event: 'click_interaction',
-  device: 'pcweb',
-  page_type: 'main',
-  section_type: '더 알아보기',
-  label: '프론트'
-}
-```
-
-**장점**: Home 페이지에서만 유효한 값만 사용 가능. 다른 페이지 값 입력 시 컴파일 에러.
-
-**참고**:
-- [전체 페이지 로거 구현](https://github.com/KIMSEUNGGYU/notes/tree/main/code-examples/logger/pages/home/logger)
-- [constants.ts](https://github.com/KIMSEUNGGYU/notes/blob/main/code-examples/logger/pages/home/logger/constants.ts)
-- [types.ts](https://github.com/KIMSEUNGGYU/notes/blob/main/code-examples/logger/pages/home/logger/types.ts)
-- [index.ts](https://github.com/KIMSEUNGGYU/notes/blob/main/code-examples/logger/pages/home/logger/index.ts)
-
----
-
-## 정리
-
-### 빠른 시작
-
-```typescript
-// 기본 사용
-const logger = makeLogger({ page_type: 'home' });
-logger.logClick({ section_type: 'header', label: '로그인 버튼' });
-
-// 타입 안전하게
-const SECTION = { HEADER: 'header' } as const;
-const logger = makeLogger<MyEventParams>({ page_type: 'home' });
-```
-
-### 핵심 원칙
-
-| 원칙 | 설명 |
-|------|------|
-| **자동화** | `device`, `page_type` 자동 포함 |
-| **타입 안전** | 상수 기반 타입으로 오타 방지 |
-| **환경별 전환** | Phase에 따라 Console/GA 자동 선택 |
-
-### 해결한 문제
-
-| 문제 | 해결 |
-|------|------|
-| 환경마다 다른 로깅 | `makeLogger`가 Phase 기반 자동 전환 |
-| 공통 필드 반복 전달 | 자동으로 병합 |
-| 오타로 잘못된 이벤트 | 상수 + 타입 강제 |
-| 페이지별 타입 불일치 | 페이지별 전용 로거 인스턴스 |
+[전체 코드 예시 — code-examples/logger](https://github.com/KIMSEUNGGYU/notes/tree/main/code-examples/logger)

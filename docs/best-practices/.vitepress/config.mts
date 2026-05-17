@@ -67,10 +67,24 @@ const sidebar = [
         text: '부록',
         collapsed: true,
         items: [
-          { text: 'A. Remotes 에러 정규화', link: '/error-handling/remotes-mapping' },
+          // { text: 'A. Remotes 에러 정규화', link: '/error-handling/remotes-mapping' },
           { text: 'B. React Query 정책', link: '/error-handling/react-query-policy' },
-          { text: 'C. errorCopy 중앙 관리', link: '/error-handling/error-copy' },
-          { text: 'D. 삼중 처리 계층 분리', link: '/error-handling/layered-architecture' },
+          // { text: 'C. errorCopy 중앙 관리', link: '/error-handling/error-copy' },
+          // { text: 'D. 삼중 처리 계층 분리', link: '/error-handling/layered-architecture' },
+        ],
+      },
+    ],
+  },
+  {
+    text: 'Logger 패턴',
+    collapsed: false,
+    items: [
+      { text: 'Logger 패턴', link: '/logger/' },
+      {
+        text: '부록',
+        collapsed: true,
+        items: [
+          { text: '페이지별 셋업 + 실 사용 예제', link: '/logger/usage' },
         ],
       },
     ],
@@ -79,8 +93,7 @@ const sidebar = [
     text: '추가 예정',
     collapsed: true,
     items: [
-      { text: 'React Query 패턴', draft: true },
-      { text: 'Logger 패턴', draft: true },
+      // { text: 'React Query 패턴', draft: true },
       { text: 'form 관리', draft: true },
     ],
   },
