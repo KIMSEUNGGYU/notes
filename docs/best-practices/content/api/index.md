@@ -1,23 +1,30 @@
 ---
-title: API 함수 작성 패턴
-description: 실무에서 사용하는 API 계층 구성 — models / remotes / queries / mutations
-outline: deep
+title: API 계층 패턴
+description: API 호출 레이어 + 서버 상태 관리(React Query) 패턴 카탈로그
+outline: [1, 6]
+todo:
+  - mutationOptions의 onSuccess 콜백 인자 (context의 queryClient 활용)를 tip 섹션으로 추가
 ---
 
-# API 함수 작성 패턴
+# API 계층 패턴
 
-## Overview
+> API 호출(remote)부터 서버 상태 관리(React Query)까지 다루는 패턴 카탈로그.
 
-API 계층을 어떻게 구성하고 사용하고 있는지 공유하는 문서입니다. 핵심 원칙과 전체 흐름을 다루며, 세부 케이스는 부록을 참고합니다.
+# TL;DR
 
-**원칙**
+API 계층은 두 영역으로 나뉜다:
 
-- API 호출은 **순수 네트워크 호출만** — 비즈니스 로직/UI 피드백 금지
-- 함수 시그니처는 **객체 파라미터(`params`)로 통일** — 파라미터 추가에도 호출처 변경 없음
-- queryKey는 **팩토리 객체로 중앙 관리** — invalidate 시 키 불일치 방지
-- 데이터 변환(폼 → DTO)은 **컴포넌트에서**, mutationFn은 remote 직접 전달
+- **Part 1 — API 호출 레이어** — HTTP 호출 함수(`remote`)와 타입 정의. 비즈니스 로직 없는 순수 네트워크 호출
+- **Part 2 — 서버 상태 (React Query)** — `queryOptions`/`mutationOptions`로 정의 분리, 컴포넌트는 `useSuspenseQuery`로 데이터 소비
 
-## 폴더 구조
+# 핵심 원칙
+
+1. **API 호출은 순수 네트워크 호출만** — 비즈니스 로직/UI 피드백 금지
+2. **함수 시그니처는 객체 파라미터(`params`)로 통일** — 파라미터 추가에도 호출처 변경 없음
+3. **`queryKey`는 팩토리 객체로 중앙 관리** — invalidate 시 키 불일치 방지
+4. **데이터 변환(폼 → DTO)은 컴포넌트에서** — `mutationFn`은 remote 직접 전달
+
+# 폴더 구조
 
 ```
 src/
@@ -26,6 +33,22 @@ src/
 ├── queries/       # queryOptions 팩토리 (조회)
 ├── mutations/     # mutationOptions 팩토리 (변경)
 └── types/         # 클라이언트 타입 + Zod 스키마
+```
+
+**전체 흐름**
+
+```
+[Part 1 — 호출 레이어]
+   models/        DTO 타입
+       ↓
+   remotes/       API 함수 (httpClient)
+       ↓
+[Part 2 — 서버 상태]
+   queries/       queryOptions 팩토리
+   mutations/     mutationOptions 팩토리
+       ↓
+[컴포넌트]
+   useSuspenseQuery / useMutation
 ```
 
 **개발 순서**
@@ -38,7 +61,11 @@ src/
 4. types/     → 클라이언트 타입 + Zod 스키마 (필요 시)
 ```
 
-## 1. 네이밍 컨벤션
+---
+
+# Part 1 — API 호출 레이어
+
+## 01. 네이밍 컨벤션
 
 ### 함수명 — HTTP 메서드별 Prefix
 
@@ -62,7 +89,9 @@ src/
 | 응답        | `*Response`     | `MerchantListResponse`               |
 | 엔티티      | 명사            | `MerchantDetail`, `MerchantListItem` |
 
-## 2. Remote 함수
+---
+
+## 02. Remote 함수
 
 ```typescript
 // remotes/merchant.ts
@@ -112,7 +141,9 @@ export const fetchMerchantDetail = (merchantId: string) => { ... };
 httpClient.get<{ items: Merchant[] }>(...);
 ```
 
-## 3. DTO 파생
+---
+
+## 03. DTO 파생
 
 ```typescript
 // ✅ 스키마 겹침 → Pick/Omit/NonNullable로 파생
@@ -126,9 +157,71 @@ interface MerchantDetail { ... }     // Detail API 전용 필드
 
 List/Detail이 필드를 공유하면 `Pick`/`Omit`/`NonNullable`로 파생. 스키마가 다르면 독립 정의. 판단 기준: 실제 서버 응답 구조가 같은가.
 
-## 4. Query (조회)
+---
 
-### queryKey 팩토리 + queryOptions 조합
+## 04. .then() 체이닝
+
+remote가 이미 Promise를 반환하므로 단순 unwrap에 `async/await`은 불필요한 Promise 래핑.
+
+```typescript
+// ✅ .then()으로 unwrap — 불필요한 Promise 래핑 없음
+const fetchUser = (id: string) =>
+  userRemote.fetchUser({ id }).then(res => res.data);
+
+// ❌ async/await — 이미 Promise인데 다시 감쌈
+const fetchUser = async (id: string) => {
+  const res = await userRemote.fetchUser({ id });
+  return res.data;
+};
+```
+
+**응답에서 특정 필드만 꺼내야 할 때도 동일**
+
+```typescript
+// ✅ items만 꺼내서 반환 — 호출처가 res.items로 접근할 필요 없음
+export const fetchMerchantList = (params: FetchMerchantListParams) => {
+  const searchParams = buildSearchParams(params);
+  return httpClient
+    .get<MerchantListResponse>('merchants', { searchParams })
+    .then(res => res.items);
+};
+
+// ✅ totalCount까지 함께 필요하면 그대로 반환
+export const fetchMerchantList = (params: FetchMerchantListParams) =>
+  httpClient.get<MerchantListResponse>('merchants', { searchParams });
+```
+
+응답 구조(`{ items, totalCount, cursor }`)를 그대로 노출할지, `.then()`으로 가공해 필요한 필드만 반환할지는 호출처가 무엇을 쓰는지에 따라 결정.
+
+---
+
+## 05. Zod 스키마 (선택)
+
+```typescript
+// types/merchant.schema.ts
+
+export const createMerchantSchema = z.object({
+  name: z.string().min(1, '필수'),
+  businessNumber: z.string().length(10, '사업자번호 10자리'),
+});
+
+// ✅ 타입은 스키마에서 파생
+export type CreateMerchantFormData = z.infer<typeof createMerchantSchema>;
+```
+
+`types/[domain].schema.ts`에 정의. 타입은 `z.infer<typeof schema>`로 파생 (별도 정의 금지 — 스키마와 불일치 위험).
+
+**사용 권장 케이스**
+
+- 외부 API 연동 (응답 형태 변경 가능성)
+- 타입 안정성이 중요한 도메인 (금융, 결제)
+- 데이터 무결성 검증 필요
+
+---
+
+# Part 2 — 서버 상태 (React Query)
+
+## 06. queryKey + queryOptions 팩토리
 
 ```typescript
 // queries/merchant.query.ts
@@ -192,7 +285,9 @@ queryOptions({ queryKey: ['merchant', 'list', filters] as const, ... });
 infinite: (filters: MerchantFilters) => infiniteQueryOptions({ ... });
 ```
 
-### normalizeFilters — 배열 필터 정렬
+---
+
+## 07. normalizeFilters — 배열 필터 정렬
 
 배열 타입 필터는 사용자가 고른 순서에 따라 값이 달라진다. 같은 조합인데도 다른 캐시 키가 되어 캐시 히트율이 떨어지는 문제를 막기 위해 정렬한다.
 
@@ -215,7 +310,9 @@ const merchantKeys = {
 };
 ```
 
-### staleTime / gcTime
+---
+
+## 08. staleTime / gcTime
 
 ```typescript
 // ✅ 유틸 함수로 가독성 확보
@@ -229,14 +326,16 @@ queryOptions({
 staleTime: 24 * 60 * 60 * 1000,
 ```
 
-| 옵션      | 역할                       | 기본값        |
-| --------- | -------------------------- | ------------- |
+| 옵션      | 역할                       | 기본값         |
+| --------- | -------------------------- | -------------- |
 | staleTime | 이 시간 내엔 refetch 안 함 | 0 (항상 stale) |
-| gcTime    | unmount 후 캐시 유지 시간  | 5분           |
+| gcTime    | unmount 후 캐시 유지 시간  | 5분            |
 
 셀렉트 옵션, 코드 목록 등 정적 데이터에 staleTime 설정. 동적 데이터는 기본값(0) 유지.
 
-## 5. Mutation (변경)
+---
+
+## 09. mutationOptions + invalidateQueries
 
 ```typescript
 // mutations/merchant.mutation.ts
@@ -278,8 +377,9 @@ const handleSubmit = async (formData: CreateMerchantFormData) => {
 **원칙**
 
 - `mutationFn`은 **remote 직접 전달** — 데이터 변환(폼 → DTO)은 컴포넌트에서
-- `invalidateQueries`는 **onSuccess에서**, UI 피드백(toast)은 컴포넌트에서
+- `invalidateQueries`는 **`onSuccess`에서**, UI 피드백(toast)은 컴포넌트에서
 - `mutateAsync` + try-catch 선호 (mutate + 콜백 패턴 지양)
+- 도메인 전체 invalidate는 `*Keys.all`, 특정 항목은 `*Keys.detail(id)`
 
 ```typescript
 // ❌ mutationFn 안에서 데이터 변환
@@ -292,7 +392,9 @@ mutationFn: async (data: EmployeeForm) => {
 mutate(data, { onSuccess: () => {}, onError: () => {} });
 ```
 
-## 6. 컴포넌트에서 사용
+---
+
+## 10. 컴포넌트 사용
 
 ### useSuspenseQuery 기본
 
@@ -312,11 +414,11 @@ function Content() {
 
 **useQuery가 필요한 경우**
 
-| 케이스                            | 이유                                                  |
-| --------------------------------- | ----------------------------------------------------- |
-| `placeholderData: keepPreviousData` | 필터 전환 시 깜빡임 방지                              |
-| 무한 스크롤                       | `isFetchingNextPage`로 부분 로딩 표시                 |
-| 조건부 쿼리 (`enabled`)           | 값이 있을 때만 호출 (검색 autocomplete 등)            |
+| 케이스                              | 이유                                          |
+| ----------------------------------- | --------------------------------------------- |
+| `placeholderData: keepPreviousData` | 필터 전환 시 깜빡임 방지                     |
+| 무한 스크롤                         | `isFetchingNextPage`로 부분 로딩 표시         |
+| 조건부 쿼리 (`enabled`)             | 값이 있을 때만 호출 (검색 autocomplete 등)    |
 
 ### `<SuspenseQuery>` vs `useSuspenseQuery`
 
@@ -358,85 +460,9 @@ const handleRowClick = (merchantId: string) => {
 
 리스트에서 행 클릭 시 상세 데이터를 미리 로드. 상세 페이지 진입 시 로딩 없는 전환.
 
-## 7. .then() 체이닝
+---
 
-remote가 이미 Promise를 반환하므로 단순 unwrap에 `async/await`은 불필요한 Promise 래핑.
-
-```typescript
-// ✅ .then()으로 unwrap — 불필요한 Promise 래핑 없음
-const fetchUser = (id: string) =>
-  userRemote.fetchUser({ id }).then(res => res.data);
-
-// ❌ async/await — 이미 Promise인데 다시 감쌈
-const fetchUser = async (id: string) => {
-  const res = await userRemote.fetchUser({ id });
-  return res.data;
-};
-```
-
-**응답에서 특정 필드만 꺼내야 할 때도 동일**
-
-```typescript
-// ✅ items만 꺼내서 반환 — 호출처가 res.items로 접근할 필요 없음
-export const fetchMerchantList = (params: FetchMerchantListParams) => {
-  const searchParams = buildSearchParams(params);
-  return httpClient
-    .get<MerchantListResponse>('merchants', { searchParams })
-    .then(res => res.items);
-};
-
-// ✅ totalCount까지 함께 필요하면 그대로 반환
-export const fetchMerchantList = (params: FetchMerchantListParams) =>
-  httpClient.get<MerchantListResponse>('merchants', { searchParams });
-```
-
-응답 구조(`{ items, totalCount, cursor }`)를 그대로 노출할지, `.then()`으로 가공해 필요한 필드만 반환할지는 호출처가 무엇을 쓰는지에 따라 결정.
-
-## 8. Zod 스키마 (선택)
-
-```typescript
-// types/merchant.schema.ts
-
-export const createMerchantSchema = z.object({
-  name: z.string().min(1, '필수'),
-  businessNumber: z.string().length(10, '사업자번호 10자리'),
-});
-
-// ✅ 타입은 스키마에서 파생
-export type CreateMerchantFormData = z.infer<typeof createMerchantSchema>;
-```
-
-`types/[domain].schema.ts`에 정의. 타입은 `z.infer<typeof schema>`로 파생 (별도 정의 금지 — 스키마와 불일치 위험).
-
-**사용 권장 케이스**
-
-- 외부 API 연동 (응답 형태 변경 가능성)
-- 타입 안정성이 중요한 도메인 (금융, 결제)
-- 데이터 무결성 검증 필요
-
-## DO & DON'T
-
-### ✅ DO
-
-- remote 함수 파라미터는 항상 **객체로** 받기
-- queryKey 팩토리(`*Keys`)로 중앙 관리, `as const`로 타입 보존
-- mutationOptions의 `onSuccess`에서 `invalidateQueries` 처리
-- `mutateAsync` + try-catch로 에러 처리
-- 서버 타입(DTO)과 클라이언트 타입 분리
-- 자주 안 바뀌는 데이터엔 `staleTime` 설정
-- `normalizeFilters`로 캐시 효율 관리
-- `useSuspenseQuery` 기본 사용
-
-### ❌ DON'T
-
-- remote 함수에서 개별 인자 받기
-- `queryKey`를 문자열 하드코딩
-- `queryKey` 인라인 정의 (팩토리 객체로 분리)
-- 컴포넌트에서 직접 `queryClient.invalidateQueries` 호출
-- `mutate` + `onSuccess`/`onError` 콜백 패턴
-- 서버 응답 타입에 클라이언트 전용 필드 추가
-- 정적 데이터에 `staleTime` 미설정
-
-## 부록
+# 부록
 
 - [API 함수 작성 패턴 (상세)](/api/api-function-pattern) — 함수명/매개변수/타입 정의 단계별 설명
+- [SSR Hydration](/api/ssr-hydration) — Next.js SSR에서 서버/클라이언트 중복 요청 방지

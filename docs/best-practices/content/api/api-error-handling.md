@@ -1,10 +1,24 @@
 ---
 title: API 에러 처리
-description: isApiError 활용과 React Query 에러 처리 패턴
+description: API 호출자 관점의 에러 처리 — isApiError 활용
 outline: deep
 ---
 
 # API 에러 처리
+
+> **API 호출자 관점**의 에러 처리. [API Client 정의](/api/api-client)에서 만든 `ApiError` / `isApiError`를 활용한 실무 패턴.
+
+## 관련 페이지
+
+이 부록은 API 호출자 관점에서 실무에 흔한 `ApiError(statusCode)` 모델을 다룹니다. 더 정교한 에러 모델 / 전역 처리는 별도 페이지:
+
+| 시각                          | 어디서 다루나                                            |
+| ----------------------------- | -------------------------------------------------------- |
+| **API 호출자 관점** (여기)   | `ApiError(statusCode)` — try-catch + `isApiError`         |
+| 에러 모델 + Boundary 전체     | [에러 핸들링 메인](/error-handling/) — `AppError(kind)` 모델로 발전된 패턴 |
+| React Query 정책 (kind 기반)  | [에러 핸들링 부록 B](/error-handling/react-query-policy) |
+
+> **모델 위계** — `ApiError(statusCode)`는 실무에서 가장 흔한 기본 패턴. `AppError(kind)`는 라우팅·NotFound 등 도메인 의도까지 분류하는 더 정교한 발전형. 프로젝트 성숙도에 맞춰 선택.
 
 ## Overview
 
@@ -153,3 +167,11 @@ function getConnectionInfo() {
 **포인트:**
 - 401은 토큰 만료로 정상 케이스이므로 Sentry 리포트 제외
 - TimeoutError 발생 시 네트워크 상태 정보 추가 (디버깅 용이)
+
+---
+
+## 더 자세히
+
+- 재시도/Sentry 정책을 `kind` 기반으로 발전시키는 방법 → [에러 핸들링 부록 B](/error-handling/react-query-policy)
+- 전역 ErrorBoundary, RedirectError/NotFoundError 등 더 큰 에러 모델 → [에러 핸들링 메인](/error-handling/)
+- HTTP/Interceptor/Query 계층 분리 → [에러 핸들링 부록 D](/error-handling/layered-architecture)
