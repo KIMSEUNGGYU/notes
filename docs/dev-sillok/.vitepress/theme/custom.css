@@ -1,18 +1,54 @@
-/* 좌측 네비게이션을 위한 여백 */
-.VPNav,
-.VPSidebar,
-.VPContent,
-.VPDoc {
-  margin-left: 64px;
+/* 콘텐츠 중앙정렬 최대폭 — 고정값 대신 화면 폭에 반응형으로.
+   clamp(하한, 화면-여백, 상한): 화면이 커질수록 콘텐츠도 넓어져 좌우 여백이
+   일정(약 48px)하게 유지되고, 초와이드(>~2016px)에선 1920으로 상한을 둔다.
+   작은 화면은 VitePress가 알아서 화면 폭에 맞춘다(max-width 특성). */
+:root {
+  --vp-layout-max-width: clamp(1440px, calc(100vw - 96px), 1920px);
 }
 
-/* 모바일에서는 상단 네비게이션을 위한 여백 */
+/* OneNavigation(좌측 64px fixed 바)을 위한 공간.
+
+   요소를 종류별로 다르게 민다 (margin+width:100%로 일괄 처리하면 우측 64px가
+   넘쳐 가로 스크롤이 생기므로):
+   - 흐름 요소: 부모 .Layout에 padding-left → 폭이 자동으로 줄어 안 넘침
+   - fixed 요소(.VPNav/.VPSidebar): left로 밀고 right:0로 묶어 폭 자동 계산 → 안 넘침 */
+.Layout {
+  padding-left: 64px;
+}
+
+.Layout .VPNav {
+  left: 64px;
+  right: 0;
+  width: auto;
+}
+
+.Layout .VPSidebar {
+  left: 64px;
+}
+
+/* 모바일: 좌측 바가 상단 가로 바로 바뀌므로 패딩/위치 원복 + 상단 여백 */
 @media (max-width: 768px) {
-  .VPNav,
-  .VPSidebar,
-  .VPContent,
-  .VPDoc {
-    margin-left: 0;
-    margin-top: 64px;
+  .Layout {
+    padding-left: 0;
+    padding-top: 64px;
   }
+
+  .Layout .VPNav {
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+
+  .Layout .VPSidebar {
+    left: 0;
+  }
+}
+
+/* HTML 발표자료 전체화면 임베드 (layout:false 페이지) */
+.embed-frame--full {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  border: 0;
 }

@@ -3,6 +3,8 @@ interface SidebarItem {
   link?: string;
   collapsed?: boolean;
   draft?: boolean;
+  target?: string;
+  rel?: string;
   items?: SidebarItem[];
 }
 
