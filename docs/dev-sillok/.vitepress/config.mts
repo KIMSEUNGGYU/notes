@@ -18,9 +18,9 @@ const sidebar = [
         text: 'Claude Code',
         collapsed: false,
         items: [
-          { text: '플러그인 4가지 컴포넌트', link: '/claude-code/plugin-components' },
-          { text: '사내 세션', link: '/claude-code/cc-session' },
-          { text: '사내 세션 A/S', link: '/claude-code/cc-session-as' },
+          { text: '플러그인 4가지 컴포넌트', link: '/claude-code/plugin-components', draft: true },
+          { text: '사내 세션', link: '/claude-code/cc-session',draft: true },
+          { text: '사내 세션 A/S', link: '/claude-code/cc-session-as',draft: true },
           {
             text: '플러그인 발표자료',
             link: '/claude-code/cc-plugin',
