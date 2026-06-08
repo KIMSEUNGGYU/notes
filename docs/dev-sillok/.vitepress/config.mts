@@ -1,11 +1,27 @@
+import { fileURLToPath } from 'node:url';
 import { phase } from './config/phase';
 import { mergeConfig } from './config/shared';
 import { filterDraftFromSidebar } from './config/sidebar';
+
+// repo 루트 — shared/nav-apps.ts 를 dev 서버에서 serve 할 수 있게 fs.allow 에 추가
+const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
 
 const sidebar = [
   {
     text: '시작하기',
     link: '/getting-started/',
+  },
+  {
+    text: 'Claude Code 플러그인 4가지 컴포넌트',
+    link: '/claude-code/plugin-components',
+  },
+  {
+    text: '사내 Claude Code 세션',
+    link: '/claude-code/cc-session',
+  },
+  {
+    text: '사내 Claude Code 세션 A/S',
+    link: '/claude-code/cc-session-as',
   },
   {
     text: 'Claude Code 플러그인 (발표자료)',
@@ -23,12 +39,19 @@ export default mergeConfig({
   outDir: '.vitepress/dist',
   srcDir: 'content',
 
+  // dev 포트 고정 — shared/nav-apps.ts 의 devPort(5174)와 일치해야 전환이 동작
+  vite: {
+    server: {
+      port: 5174,
+      strictPort: true,
+      fs: { allow: [repoRoot] },
+    },
+  },
+
   themeConfig: {
     siteTitle: '개발 실록',
 
-    nav: [
-      { text: '홈', link: '/' },
-    ],
+    nav: [{ text: '홈', link: '/' }],
 
     sidebar: await filterDraftFromSidebar(sidebar, phase),
 

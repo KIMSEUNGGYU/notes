@@ -1,6 +1,10 @@
+import { fileURLToPath } from 'node:url';
 import { phase } from './config/phase';
 import { mergeConfig } from './config/shared';
 import { filterDraftFromSidebar } from './config/sidebar';
+
+// repo 루트 — shared/nav-apps.ts 를 dev 서버에서 serve 할 수 있게 fs.allow 에 추가
+const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
 
 const sidebar = [
   {
@@ -63,6 +67,15 @@ export default mergeConfig({
   base: '/frontend-docs',
   outDir: '.vitepress/dist',
   srcDir: 'content',
+
+  // dev 포트 고정 — shared/nav-apps.ts 의 devPort(5173)와 일치해야 전환이 동작
+  vite: {
+    server: {
+      port: 5173,
+      strictPort: true,
+      fs: { allow: [repoRoot] },
+    },
+  },
 
   themeConfig: {
     siteTitle: 'Frontend.zip',
