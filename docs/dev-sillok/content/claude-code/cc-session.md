@@ -1,0 +1,304 @@
+---
+title: 사내 Claude Code 세션
+description: Claude Code 설치부터 플러그인 만들기까지 — 사내 세션 실습 가이드 (2026-03-06)
+head:
+  - - meta
+    - name: keywords
+      content: claude-code, plugin, MCP, skill, CLAUDE.md, 사내세션
+---
+
+# 사내 Claude Code 세션
+
+발표일: 2026년 3월 6일
+
+## Claude Code 는 OS 다
+
+- OS(운영체제)는 컴퓨터를 통해 다양한 프로그램을 실행해서 **사람의 의도를 실행으로 바꾸는 것**이다.
+- 기존 OS: 사람이 프로그램을 직접 실행하고, 단계마다 손으로 조작
+- Claude Code: 사람이 **목표를 말하면**, AI가 이해하고 계획하고 실행
+
+→ Claude Code를 사용하면 우리가 하나씩 했던 작업들(프로그램 클릭 → 프로그램 열림 → 마우스 클릭, 문서 작성 등)을 Claude Code가 실행하여 자동으로 수행
+
+**⇒ 즉, 기존의 수동 작업을 자동으로 수행!**
+
+## 1. 클로드 코드 설치하기
+
+공식 문서: <https://code.claude.com/docs/ko/setup>
+
+1. 터미널 열기
+2. claude 설치 명령어 수행
+
+   ```bash
+   curl -fsSL https://claude.ai/install.sh | bash
+   ```
+
+3. Setup Note에 뜬 `echo 'export ~~'` 입력하기
+
+   ```bash
+   echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
+   ```
+
+4. 아래 내용 차례로 넣고 잘 깔렸는지 확인
+
+   ```bash
+   mkdir ~/ai
+   cd ~/ai
+   claude
+   ```
+
+::: details 부록 — SSL 인증 에러가 난다면 (우회 방식)
+```bash
+export NODE_TLS_REJECT_UNAUTHORIZED=0
+claude
+```
+:::
+
+::: details 부록 — 수동 설치 (brew / nodejs)
+이것도 Claude Code에게 "해줘"라고 하면 됩니다.
+
+```bash
+# 1. homebrew 설치 (git 설치가 안 되면)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 2. claude 설치
+curl -fsSL https://claude.ai/install.sh | bash
+```
+:::
+
+### 입문자 추천
+
+```bash
+/output-style
+# Explanatory 선택
+```
+
+### Claude Code 가 OS 라고 생각하는 이유
+
+PPT 만들어주는 [frontend-slides](https://github.com/zarazhangrui/frontend-slides)를 이용해서 보여주기!
+
+```bash
+https://github.com/zarazhangrui/frontend-slides 해당 url 을 참고해서 project 단위로 설치해줘
+
+# 실제 설치 방법
+# git clone https://github.com/zarazhangrui/frontend-slides .claude/skills/frontend-slides
+```
+
+```text
+// 이번 사내 세션의 내용을 주고 ppt 만들어 달라고 요청하기
+```
+
+## 2. 간단한 개념 익히기
+
+::: tip
+AI는 질문하는 방법이 중요하고, **Context(맥락)가 많을수록 더 정확한 답변**을 줍니다.
+:::
+
+### 기본 조작법
+
+- 터미널에서 `claude` 입력하면 시작
+- 대화하듯 한국어로 요청하면 됨
+- `Shift+Tab` : 수락 모드 전환 (자동 수락 / 하나씩 확인)
+- `Esc` 키 2번 : 진행 중인 작업 중단
+- `/help` : 도움말
+- `/clear` : 대화 초기화 (맥락이 꼬였을 때 유용)
+
+### CLAUDE.md 란?
+
+- **AI에게 주는 지시서/매뉴얼** — 프로젝트 폴더에 `CLAUDE.md` 파일을 만들어두면 Claude Code가 자동으로 읽는다
+- 예시: "항상 한국어로 답변해줘", "이 프로젝트는 React + TypeScript야", "커밋 메시지는 한국어로"
+- 즉, **내가 매번 말하지 않아도 AI가 알아서 규칙을 따르게** 하는 설정 파일
+- `CLAUDE.md`에 잘 적을수록 → AI가 내 의도를 더 정확히 파악 → 더 좋은 결과
+
+### Skills 란?
+
+- `/명령어` 형태로 실행하는 **미리 정의된 작업 템플릿**
+- 예: `/commit` → 변경사항 분석 후 자동 커밋, `/review` → 코드 리뷰
+- 복잡한 프롬프트를 매번 입력할 필요 없이, 한 단어로 실행 가능
+
+### Plugin 이란?
+
+- Skills, Hooks(자동 실행 규칙), MCP(외부 서비스 연동) 등을 **묶어서 패키지로 만든 것**
+- 다른 사람이 만든 플러그인을 설치하거나, 본인만의 플러그인을 만들 수 있음
+- 오늘 실습에서 직접 만들어볼 예정!
+
+## 3. 실습 1 — 내 업무 파악 + 도구 설치
+
+### 1) 본인이 출근 후 하는 행동을 하나씩 써보기 (5~10분)
+
+```text
+예시)
+1. 시프트 클릭
+2. 간단하게 커피 한잔
+3. 캘린더 확인
+4. 슬랙 확인
+5. 메일 확인
+6. JIRA/Linear 티켓 확인
+...
+```
+
+### 2) MCP 설치 (외부 서비스 연동)
+
+Claude 앱으로 하는 게 가장 편해서 그 방향으로 진행합니다.
+
+- notion
+- slack
+- google calendar
+
+::: tip MCP란?
+**Model Context Protocol** — Claude가 외부 서비스(슬랙, 노션, 캘린더 등)를 직접 읽고 쓸 수 있게 해주는 연동 방식
+:::
+
+### 3) clarify 플러그인 설치
+
+[team-attention/plugins-for-claude-natives](https://github.com/team-attention/plugins-for-claude-natives)
+
+::: tip clarify란?
+AI는 애매하게 요청하면 의도한 답변이 나오지 않습니다. `clarify`는 **"모호한 요구사항을 구체적인 질문으로 바꿔주는"** 플러그인 — 즉 "질문 잘하는 법"을 AI가 도와주는 것입니다.
+:::
+
+```bash
+# 마켓플레이스 추가
+/plugin marketplace add team-attention/plugins-for-claude-natives
+
+# 플러그인 설치
+# /plugin install <plugin-name>
+/plugin install clarify
+```
+
+```bash
+# 그냥 이것도 AI에게 시켜도 됨
+https://github.com/team-attention/plugins-for-claude-natives 에서 clarify 설치해줘
+```
+
+확인 방법:
+
+```bash
+/plugins   # 이건 같이 하는 게 빠를 듯
+```
+
+## 4. 실습 2 — 한 주를 정리해주는 Plugin 만들기
+
+업무 목록을 기반으로 github/slack/notion 등을 연동해서 한 주를 자동 정리하는 플러그인을 직접 만들어봅니다.
+
+### 2.1 프롬프트 명확화 with clarify
+
+먼저 `clarify`로 내가 원하는 걸 구체화합니다.
+
+```text
+/clarify
+- 한 주를 정리하는 기능을 만들고 싶어
+- github 를 연동해서 한 주의 작업과, 슬랙에 내가 말한 거와 내가 멘션된 거 쓰레드까지 포함하면 한 주의 작업한 내용을 확인할 수 있을 거 같아
+- 액션 아이템도 말해줘
+- /plugin-dev:create-plugin 로 플러그인을 만들 거야, 실행할 때 프롬프트를 복사/붙여넣기 해서 사용할 거야
+```
+
+→ `clarify`로 애매모호한 것을 좀 더 명확하게 정리
+
+- 각 직무에 맞게 (github는 개발자용) 필요한 도구(노션 등)로 작성하는 것을 추천
+
+### 2.2 `/plugin-dev:create-plugin` 으로 Plugin 만들기
+
+```text
+/plugin-dev:create-plugin [2.1에서 정리된 내용 복/붙]
+```
+
+::: details 부록 — plugin-dev 설치 방법
+```bash
+# 1. plugin 메뉴 접속
+/plugin
+
+# 2. marketplaces 접속
+#  - claude-plugins-official 선택
+#  - Browse plugins 선택
+#  - 좀 내리다 보면 "plugin-dev" 가 있음
+```
+:::
+
+## 5. 실습 3 — 내 업무 프로세스 개선 포인트 찾기
+
+실습 1에서 작성한 업무 목록을 다시 꺼내서, Claude에게 개선 포인트를 찾아달라고 요청합니다.
+
+### 1) "자동화 후보" 표시하기
+
+실습 1에서 작성한 업무 목록에 아래 항목을 추가로 작성:
+
+```text
+**...실습 1 내용 복붙**
+
+- ⏱ 오래 걸리는 부분
+- 🔁 반복하는 부분
+- 😤 귀찮은 부분
+- 💡 개선하고 싶은 부분
+```
+
+### 2) Claude에게 요청하기
+
+- 체크한 내용을 Claude Code에 복/붙해서 요청:
+  → *"이 중에서 네가 자동화할 수 있는 부분을 찾아줘, 자동화해줘"*
+- **Claude가 알아서 업무 프로세스의 개선 포인트를 분석하고 자동화 방안을 제안해준다**
+
+## 6. 마무리 인사이트 — 문서화 = AI 실행력
+
+앞에서 "Claude Code는 OS다"라고 했습니다. 그 핵심을 한 문장으로:
+
+### 문서화 수준 = AI 실행력
+
+| 내가 하는 것 | AI가 하는 것 |
+| --- | --- |
+| 궁금한 것, 모르는 것 → 물어본다 | AI가 찾아서 알려준다 |
+| 반복 업무 → 문서로 스펙화한다 | AI가 자동화한다 |
+| 규칙·프로세스 → CLAUDE.md에 정의한다 | AI가 따른다 |
+
+**AI(LLM)는 글을 이해하고 글로 실행한다.**
+
+→ 문서·글·지식으로 표현 가능한 모든 업무는 AI가 처리할 수 있다.
+
+→ 내가 구조화하고 문서화할수록, AI가 더 정확하게 수행한다.
+
+::: tip Claude Code 는 OS 다
+단, LLM인 Claude Code는 **문서 관련한 것에 한해** 자동화할 수 있습니다. 즉 App(프로그램) 단의 자동화는 OpenClaw 영역 (앞으로 Claude Code가 해당 기능도 제공하지 않을까 싶습니다).
+:::
+
+## 7. 앞으로 — 셀프 학습 가이드
+
+### 추천 학습 자료
+
+[ai-native-camp/camp-2](https://github.com/ai-native-camp/camp-2)
+
+```bash
+cd ~/ai
+```
+
+```bash
+https://github.com/ai-native-camp/camp-2 이거 설치해줘
+```
+
+1. ~~해당 자료 다운로드 받기~~
+2. 다운로드 받은 자료 경로(위치)에서 `claude` 실행하기
+3. 하나씩 진행
+
+   ```text
+   day1 시작하자
+   // 설명 나오고 하나씩 질문이 옴
+   // 섹션1 - 설명..
+   // 섹션1 퀴즈 - 풀고
+   // "다음으로 가자"
+   //
+   // .. day1 완료
+   ```
+
+4. `day1 시작하자` 라고 입력
+   - day2, day3... 순서대로 진행
+
+> 이 자료를 익히면 → [Claude Code 플러그인 4가지 컴포넌트](/claude-code/plugin-components) 개념을 익힐 수 있고, 본인에게 필요한 것을 커스텀하게 만들 수 있습니다.
+
+### 해볼 만한 것들
+
+- 관련 직무 뉴스레터 자동 생성 (뉴스 수집 → 번호 매기기 → 원하는 포맷으로 출력)
+- 일일 업무 리포트 자동화
+- 반복 메일/슬랙 메시지 템플릿화
+
+### 추가 팁
+
+- [superpowers plugins](https://github.com/nicobailey/claude-code-superpowers) — 유용한 플러그인 모음
+- 공식 문서: <https://docs.anthropic.com/en/docs/claude-code>
