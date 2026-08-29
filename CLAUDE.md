@@ -18,13 +18,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 pnpm install
 
 # 개발 서버
-pnpm docs:best-practices:dev    # 베스트 프랙티스 (localhost:5173)
-pnpm docs:dev-sillok:dev        # 개발 실록 (localhost:5174)
+pnpm best:dev                   # 베스트 프랙티스 (localhost:5173)
+pnpm sillok:dev                 # 개발 실록 (localhost:5174)
+pnpm wiki:dev                   # Wiki (localhost:5175)
 
 # 빌드
 pnpm build                      # 전체 통합 빌드 → dist/
-pnpm docs:best-practices:build  # 개별 빌드
-pnpm docs:dev-sillok:build
+pnpm best:build                 # 개별 빌드
+pnpm sillok:build
+pnpm wiki:build
 
 # 린트 & 포맷
 pnpm lint                       # Biome 검사
@@ -40,27 +42,38 @@ pnpm preview                    # 통합 빌드 결과 프리뷰 (localhost:3000
 
 ```
 notes/
-├── docs/
-│   ├── best-practices/         # 워크스페이스: 프론트엔드 베스트 프랙티스
+├── docs/                       # 문서 사이트 (워크스페이스)
+│   ├── best-practices/         # → /frontend-docs/  (5173)
 │   │   ├── .vitepress/
-│   │   │   ├── config.mts      # VitePress 설정
-│   │   │   ├── components/     # Vue 컴포넌트
-│   │   │   └── theme/          # 커스텀 테마
-│   │   └── [topic]/index.md    # 문서 (폴더별 주제)
-│   │
-│   └── dev-sillok/             # 워크스페이스: 개발 실록
-│       └── (동일 구조)
+│   │   │   ├── config.mts      # 사이트 고유 설정 (사이드바·제목·포트)
+│   │   │   └── theme/index.ts  # @notes/shared 테마 re-export
+│   │   └── content/            # 문서 (폴더별 주제)
+│   ├── dev-sillok/             # → /dev-sillok/     (5174)
+│   └── wiki/                   # → /wiki/           (5175, 사이드바 자동 생성)
 │
+├── packages/shared/src/        # 사이트 공통 배관 (@notes/shared)
+│   ├── nav-apps.ts             # 앱 전환 레일 SSOT
+│   ├── config.ts               # VitePress 공통 설정 (mergeConfig)
+│   ├── theme.ts                # 공통 테마
+│   ├── OneNavigation.vue       # 좌측 레일 컴포넌트
+│   ├── sidebar.ts              # 사이드바 draft 필터
+│   ├── phase.ts                # PHASE 판별 (live / dev)
+│   ├── ga.ts                   # Google Analytics
+│   └── custom.css
+│
+├── _templates/vitepress/new/   # hygen 스캐폴딩 템플릿
 ├── .scripts/build.mjs          # 통합 빌드 스크립트
-├── .ai/                        # AI 컨텍스트 (패턴, 세션 등)
+├── .ai/                        # AI 컨텍스트 (gitignore — 다른 환경에 안 넘어감)
 └── code-examples/              # 문서에서 참조하는 코드 예제
 ```
 
 ### 핵심 포인트
 
 - **pnpm workspace + catalog**: `pnpm-workspace.yaml`에서 공통 의존성 버전 관리 (`vitepress`, `vue`, `typescript`)
-- **각 문서 독립적**: `docs/best-practices`와 `docs/dev-sillok`은 독립적인 VitePress 프로젝트
-- **통합 빌드**: `.scripts/build.mjs`가 각 워크스페이스 빌드 후 `dist/`에 통합ß
+- **공통 배관은 `@notes/shared`**: 사이트에 남는 파일은 `config.mts`와 `theme/index.ts` 둘뿐. 레일에 앱을 추가하려면 `packages/shared/src/nav-apps.ts` 한 곳만 고친다
+- **통합 빌드**: `.scripts/build.mjs`가 각 워크스페이스 빌드 후 `dist/`에 통합
+- **PHASE**: `live`면 GA 활성 + draft 숨김, 그 외는 반대. 환경변수가 없으면 `VERCEL_ENV === 'production'`일 때만 `live`
+- **새 사이트 추가**: `pnpm new:vitepress` — `nav-apps.ts`와 `build.mjs`에 자동 주입된다
 
 ## 문서 작성 스타일
 

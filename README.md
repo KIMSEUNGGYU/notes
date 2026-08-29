@@ -31,7 +31,7 @@ pnpm install
 
 ```bash
 # 프론트엔드 베스트 프랙티스
-pnpm docs:best-practices:dev
+pnpm best:dev
 # → http://localhost:5173/frontend-docs/
 
 # 개발 실록
@@ -39,7 +39,7 @@ pnpm sillok:dev
 # → http://localhost:5174/dev-sillok/
 
 # Wiki
-pnpm docs:wiki:dev
+pnpm wiki:dev
 # → http://localhost:5175/wiki/
 ```
 
@@ -50,9 +50,9 @@ pnpm docs:wiki:dev
 ### 개별 빌드
 
 ```bash
-pnpm docs:best-practices:build
+pnpm best:build
 pnpm sillok:build
-pnpm docs:wiki:build
+pnpm wiki:build
 ```
 
 ### 전체 통합 빌드
@@ -77,9 +77,9 @@ dist/
 ### 개별 프리뷰
 
 ```bash
-pnpm docs:best-practices:preview
+pnpm best:preview
 pnpm sillok:preview
-pnpm docs:wiki:preview
+pnpm wiki:preview
 ```
 
 ### 전체 프리뷰
@@ -99,9 +99,9 @@ pnpm preview
 
 | 명령어 | 설명 |
 |--------|------|
-| `pnpm docs:best-practices:dev` \| `:build` \| `:preview` | 베스트 프랙티스 |
+| `pnpm best:dev` \| `:build` \| `:preview` | 베스트 프랙티스 |
 | `pnpm sillok:dev` \| `:build` \| `:preview` | 개발 실록 |
-| `pnpm docs:wiki:dev` \| `:build` \| `:preview` | Wiki |
+| `pnpm wiki:dev` \| `:build` \| `:preview` | Wiki |
 | `pnpm build` | 전체 통합 빌드 |
 | `pnpm preview` | 전체 통합 프리뷰 |
 | `pnpm lint` \| `lint:fix` | Biome 검사 / 자동 수정 |
@@ -179,7 +179,7 @@ pnpm new:vitepress --name my-docs --title "My Docs" --description "설명" --nav
 
 생성 후 남는 수동 작업은 둘입니다.
 
-1. 루트 `package.json` 에 `docs:{name}:dev` / `:build` / `:preview` 스크립트 추가
+1. 루트 `package.json` 에 `{name}:dev` / `:build` / `:preview` 스크립트 추가
 2. `nav-apps.ts` 의 아이콘 `TODO` 를 [heroicons](https://heroicons.com/) (Solid) 에서 골라 교체
 
 ## 🛠️ 기술 스택
@@ -198,7 +198,7 @@ pnpm new:vitepress --name my-docs --title "My Docs" --description "설명" --nav
 
 ```bash
 # 1. 개발 서버 실행
-pnpm docs:best-practices:dev
+pnpm best:dev
 
 # 2. 마크다운 파일 작성
 # docs/best-practices/content/my-article/index.md
@@ -241,7 +241,6 @@ MIT
 - api 실전 코드를 `code-examples` 에 추가하기 
 - draft 메커니즘 통일 — 사이드바 배열 `draft`(링크만 숨김)와 frontmatter `draft`(페이지째 숨김)가 따로 논다
 - 사이트 간 통합 검색 검토 (Algolia DocSearch) — VitePress 로컬 검색은 사이트 단위
-- 루트 스크립트 이름 통일 — `sillok:*` 만 짧은 형태라 `docs:*:*` 와 어긋난다
 
 ### 베스트 템플릿 컨텐츠 내용 
 - [x] 좋은 코드란?

@@ -68,9 +68,9 @@ module.exports = {
       console.log(`
 생성 후 남은 작업 2가지:
   1. 루트 package.json 에 스크립트 추가
-       "docs:${answers.name}:dev": "pnpm --filter ${answers.name} dev",
-       "docs:${answers.name}:build": "pnpm --filter ${answers.name} build",
-       "docs:${answers.name}:preview": "pnpm --filter ${answers.name} preview"
+       "${answers.name}:dev": "pnpm --filter ${answers.name} dev",
+       "${answers.name}:build": "pnpm --filter ${answers.name} build",
+       "${answers.name}:preview": "pnpm --filter ${answers.name} preview"
   2. pnpm install 후 packages/shared/src/nav-apps.ts 의 아이콘 TODO 교체
 `);
 
