@@ -8,6 +8,10 @@ const sidebar = [
     link: '/introduce/',
   },
   {
+    text: '프론트엔드 코드 온보딩',
+    link: '/onboarding/',
+  },
+  {
     text: '좋은 코드란?',
     collapsed: false,
     items: [
