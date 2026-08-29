@@ -14,7 +14,8 @@ if (existsSync('.env')) {
 
 const workspaces = [
   { name: 'best-practices', outputDir: 'frontend-docs' },
-  { name: 'dev-sillok', outputDir: 'dev-sillok' }
+  { name: 'dev-sillok', outputDir: 'dev-sillok' },
+  { name: 'wiki', outputDir: 'wiki' },
 ];
 
 console.log('🚀 통합 빌드를 시작합니다...\n');
@@ -63,5 +64,6 @@ console.log('\n✨ 빌드 완료!');
 console.log(`\n📂 빌드 결과: ${distDir}/`);
 console.log('   ├── index.html (루트 랜딩 페이지)');
 console.log('   ├── frontend-docs/');
-console.log('   └── dev-sillok/');
+console.log('   ├── dev-sillok/');
+console.log('   └── wiki/');
 console.log('\n💡 로컬 프리뷰: npx serve dist');
