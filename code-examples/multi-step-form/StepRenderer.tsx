@@ -14,7 +14,7 @@ export function StepRenderer<T extends string[]>({ steps, currentStepIndex, comp
       {steps
         .slice(0, currentStepIndex + 1)
         .reverse()
-        .map(step => (
+        .map((step) => (
           <React.Fragment key={step}>{components[step as T[number]]}</React.Fragment>
         ))}
     </>

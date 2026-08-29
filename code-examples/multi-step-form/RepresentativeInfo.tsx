@@ -53,7 +53,7 @@ export function RepresentativeInfo({ onNext: onNextPage }: Props) {
 
   const formId = useId();
 
-  const incompleteStepIndex = INPUT_STEPS.findIndex(value => document[value] == null);
+  const incompleteStepIndex = INPUT_STEPS.findIndex((value) => document[value] == null);
   const initialStepIndex = incompleteStepIndex !== -1 ? incompleteStepIndex : INPUT_STEPS.length - 1;
 
   const { currentStepIndex, currentStep, isLastStep, goNextStep } = useStepper(initialStepIndex, INPUT_STEPS);
@@ -83,7 +83,7 @@ export function RepresentativeInfo({ onNext: onNextPage }: Props) {
               },
               {
                 onSuccess: onNextPage,
-              }
+              },
             );
           })}
         >
