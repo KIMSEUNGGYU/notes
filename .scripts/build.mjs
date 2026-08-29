@@ -16,6 +16,7 @@ const workspaces = [
   { name: 'best-practices', outputDir: 'frontend-docs' },
   { name: 'dev-sillok', outputDir: 'dev-sillok' },
   { name: 'wiki', outputDir: 'wiki' },
+  // hygen:workspaces
 ];
 
 console.log('🚀 통합 빌드를 시작합니다...\n');

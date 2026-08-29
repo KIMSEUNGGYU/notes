@@ -12,6 +12,7 @@ to: docs/<%= name %>/package.json
     "preview": "vitepress preview ."
   },
   "devDependencies": {
+    "@notes/shared": "workspace:*",
     "vitepress": "catalog:",
     "vue": "catalog:"
   }

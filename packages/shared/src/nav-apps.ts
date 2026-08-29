@@ -73,6 +73,7 @@ const APPS: AppDef[] = [
     icon: WIKI_ICON,
     draft: true,
   },
+  // hygen:apps
 ];
 
 const appHref = (app: AppDef): string =>
