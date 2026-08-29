@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { mergeConfig } from '@notes/shared/config';
 import { isProduction, phase } from '@notes/shared/phase';
 import { withSidebar } from 'vitepress-sidebar';
+import type { SidebarSortItem } from 'vitepress-sidebar/types';
 
 // repo 루트 — packages/shared 을 dev 서버에서 serve 할 수 있게 fs.allow 에 추가
 const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
@@ -13,6 +14,11 @@ const vitePressOptions = {
   base: '/wiki/',
   outDir: '.vitepress/dist',
   srcDir: 'content',
+
+  // live 에서 빠지는 것 — study 전체와 쓰는 중인 글. dev 프리뷰에서는 다 보인다.
+  // VitePress 는 content/ 기준, vitepress-sidebar 는 docs/wiki 기준으로 glob 해서
+  // 양쪽에 다 걸리도록 '**/' 를 붙인다 (안 붙이면 사이드바에만 링크가 남아 404)
+  srcExclude: isProduction ? ['**/study/**', '**/*.draft.md'] : [],
 
   vite: {
     define: {
@@ -34,6 +40,16 @@ const vitePressOptions = {
   },
 };
 
+const collator = new Intl.Collator('ko', { numeric: true, sensitivity: 'base' });
+
+// sortMenusByCustomFunction 은 sortMenusByName 과 같이 못 쓴다 — 이름 정렬까지 여기서 한다
+const sortMenus = (a: SidebarSortItem, b: SidebarSortItem) => {
+  const draftGap = Number(a.fileName.endsWith('.draft.md')) - Number(b.fileName.endsWith('.draft.md'));
+  if (draftGap !== 0) return draftGap;
+
+  return collator.compare(a.text ?? a.fileName, b.text ?? b.fileName);
+};
+
 // 사이드바는 content/ 스캔으로 자동 생성 — 문서를 추가해도 이 파일을 고치지 않는다
 const sidebarOptions = {
   scanStartPath: 'content',
@@ -42,9 +58,8 @@ const sidebarOptions = {
   useFolderTitleFromIndexFile: true,
   collapsed: true,
   collapseDepth: 2,
-  sortMenusByName: true,
-  // draft 는 frontmatter 로만 거른다 (filterDraftFromSidebar 는 자동 사이드바와 같이 못 씀)
-  ...(isProduction ? { excludeFilesByFrontmatterFieldName: 'draft' } : {}),
+  sortMenusByCustomFunction: sortMenus,
+  sortFolderTo: 'bottom' as const,
 };
 
 export default mergeConfig(withSidebar(vitePressOptions, sidebarOptions));
