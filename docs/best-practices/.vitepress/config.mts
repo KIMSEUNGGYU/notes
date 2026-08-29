@@ -91,10 +91,17 @@ const sidebar = [
     ],
   },
   {
-    text: '추가 예정',
-    collapsed: true,
+    text: 'form 관리',
+    collapsed: false,
     items: [
-      { text: 'form 관리', draft: true },
+      { text: 'form 관리', link: '/form/' },
+      {
+        text: '부록',
+        collapsed: true,
+        items: [
+          { text: '조건부 폼', link: '/form/conditional-forms' },
+        ],
+      },
     ],
   },
   // {
