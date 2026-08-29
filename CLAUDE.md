@@ -19,13 +19,11 @@ pnpm install
 
 # 개발 서버
 pnpm best:dev                   # 베스트 프랙티스 (localhost:5173)
-pnpm sillok:dev                 # 개발 실록 (localhost:5174)
 pnpm wiki:dev                   # Wiki (localhost:5175)
 
 # 빌드
 pnpm build                      # 전체 통합 빌드 → dist/
 pnpm best:build                 # 개별 빌드
-pnpm sillok:build
 pnpm wiki:build
 
 # 린트 & 포맷
@@ -48,8 +46,10 @@ notes/
 │   │   │   ├── config.mts      # 사이트 고유 설정 (사이드바·제목·포트)
 │   │   │   └── theme/index.ts  # @notes/shared 테마 re-export
 │   │   └── content/            # 문서 (폴더별 주제)
-│   ├── dev-sillok/             # → /dev-sillok/     (5174)
 │   └── wiki/                   # → /wiki/           (5175, 사이드바 자동 생성)
+│       └── content/
+│           ├── study/          # 학습 기록 — live 에서 제외
+│           └── posts/          # 발행 글 (*.draft.md 는 live 에서 제외)
 │
 ├── packages/shared/src/        # 사이트 공통 배관 (@notes/shared)
 │   ├── nav-apps.ts             # 앱 전환 레일 SSOT
