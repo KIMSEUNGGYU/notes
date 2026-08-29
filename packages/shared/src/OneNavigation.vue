@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { useRoute } from 'vitepress';
-import { NAVIGATION_ITEMS, type NavItem } from './NavigationItems';
+import { NAVIGATION_ITEMS, type NavItem } from './nav-apps.ts';
 
 declare const __PHASE__: string;
 

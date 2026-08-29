@@ -1,5 +1,6 @@
 packages:
   - 'docs/*'
+  - 'packages/*'
 
 catalog:
   vitepress: ^1.0.0

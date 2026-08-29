@@ -9,6 +9,7 @@
     "preview": "vitepress preview ."
   },
   "devDependencies": {
+    "@notes/shared": "workspace:*",
     "@types/glob": "^9.0.0",
     "glob": "^13.0.0",
     "gray-matter": "^4.0.3",

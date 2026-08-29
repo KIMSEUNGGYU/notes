@@ -1,6 +1,6 @@
 import { defineConfig, type UserConfig } from 'vitepress';
-import { getGoogleAnalyticsHead } from './ga';
-import { isProduction } from './phase';
+import { getGoogleAnalyticsHead } from './ga.ts';
+import { isProduction } from './phase.ts';
 
 export const sharedConfig = defineConfig({
   lang: 'ko-KR',
@@ -22,8 +22,7 @@ export const sharedConfig = defineConfig({
     head.push(['link', { rel: 'icon', href: `${base}/favicon.ico` }]);
 
     const title = pageData.frontmatter.title || pageData.title || siteConfig.site.title;
-    const description =
-      pageData.frontmatter.description || pageData.description || siteConfig.site.description;
+    const description = pageData.frontmatter.description || pageData.description || siteConfig.site.description;
     const pagePath = pageData.relativePath.replace(/index\.md$/, '').replace(/\.md$/, '');
     const url = `https://seunggyu.vercel.app${base}/${pagePath}`.replace(/\/+$/, '');
     const image = pageData.frontmatter.image || `https://seunggyu.vercel.app${base}/og-image.png`;

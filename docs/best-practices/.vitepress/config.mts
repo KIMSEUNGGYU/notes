@@ -1,6 +1,10 @@
-import { phase } from './config/phase';
-import { mergeConfig } from './config/shared';
-import { filterDraftFromSidebar } from './config/sidebar';
+import { fileURLToPath } from 'node:url';
+import { mergeConfig } from '@notes/shared/config';
+import { phase } from '@notes/shared/phase';
+import { filterDraftFromSidebar } from '@notes/shared/sidebar';
+
+// repo 루트 — packages/shared 을 dev 서버에서 serve 할 수 있게 fs.allow 에 추가
+const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
 
 const sidebar = [
   {
@@ -38,11 +42,8 @@ const sidebar = [
       {
         text: '부록 ',
         collapsed: true,
-        items: [
-          { text: 'FSD 아키텍처', link: '/folder-structure/fsd-architecture' },
-        ],
+        items: [{ text: 'FSD 아키텍처', link: '/folder-structure/fsd-architecture' }],
       },
-
     ],
   },
   {
@@ -88,9 +89,7 @@ const sidebar = [
       {
         text: '부록',
         collapsed: true,
-        items: [
-          { text: '페이지별 셋업 + 실 사용 예제', link: '/logger/usage' },
-        ],
+        items: [{ text: '페이지별 셋업 + 실 사용 예제', link: '/logger/usage' }],
       },
     ],
   },
@@ -102,9 +101,7 @@ const sidebar = [
       {
         text: '부록',
         collapsed: true,
-        items: [
-          { text: '조건부 폼', link: '/form/conditional-forms' },
-        ],
+        items: [{ text: '조건부 폼', link: '/form/conditional-forms' }],
       },
     ],
   },
@@ -131,6 +128,11 @@ export default mergeConfig({
   vite: {
     define: {
       __PHASE__: JSON.stringify(phase),
+    },
+    server: {
+      port: 5173,
+      strictPort: true,
+      fs: { allow: [repoRoot] },
     },
   },
 

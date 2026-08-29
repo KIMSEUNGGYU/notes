@@ -209,7 +209,11 @@ export function initGATracking() {
   cleanups.push(trackThemeChange());
 
   // 모든 클린업 함수 반환
-  return () => cleanups.forEach((cleanup) => cleanup?.());
+  return () => {
+    cleanups.forEach((cleanup) => {
+      cleanup?.();
+    });
+  };
 }
 
 // TypeScript 타입 확장
