@@ -18,7 +18,7 @@ const vitePressOptions = {
   // live 에서 빠지는 것 — study 전체와 쓰는 중인 글. dev 프리뷰에서는 다 보인다.
   // VitePress 는 content/ 기준, vitepress-sidebar 는 docs/wiki 기준으로 glob 해서
   // 양쪽에 다 걸리도록 '**/' 를 붙인다 (안 붙이면 사이드바에만 링크가 남아 404)
-  srcExclude: isProduction ? ['**/study/**', '**/*.draft.md'] : [],
+  srcExclude: isProduction ? ['**/_study/**', '**/*.draft.md'] : [],
 
   vite: {
     define: {
@@ -47,8 +47,13 @@ const sortMenus = (a: SidebarSortItem, b: SidebarSortItem) => {
   // frontmatter 의 order 가 있으면 그 순서로 (기초 → 심화처럼 읽는 차례가 있을 때).
   // 안 적은 문서는 뒤로 밀리고 이름순을 따른다.
   const orderOf = (x: SidebarSortItem) => (typeof x.frontmatter?.order === 'number' ? x.frontmatter.order : Number.POSITIVE_INFINITY);
-  const orderGap = orderOf(a) - orderOf(b);
-  if (orderGap !== 0) return orderGap;
+  // 뺄셈으로 비교하면 order 가 둘 다 없을 때 Infinity - Infinity = NaN 이 되어 정렬이 깨진다
+  const [ao, bo] = [orderOf(a), orderOf(b)];
+  if (ao !== bo) return ao < bo ? -1 : 1;
+
+  // _ 로 시작하는 폴더(_study 등)는 성격이 달라 맨 아래로
+  const underscoreGap = Number(a.fileName.startsWith('_')) - Number(b.fileName.startsWith('_'));
+  if (underscoreGap !== 0) return underscoreGap;
 
   const draftGap = Number(a.fileName.endsWith('.draft.md')) - Number(b.fileName.endsWith('.draft.md'));
   if (draftGap !== 0) return draftGap;

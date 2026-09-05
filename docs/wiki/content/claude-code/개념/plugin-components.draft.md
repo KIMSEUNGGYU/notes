@@ -1,15 +1,15 @@
 ---
-title: Claude Code 플러그인 — Skill · Agent · Hook
+title: Skill · Agent · Hook
 description: 부품 셋이 각각 뭘 하고 왜 같이 있어야 하는가
 updated: 2026-06-06
 order: 1
 outline: deep
 ---
 
-# Claude Code 플러그인 — Skill · Agent · Hook
+# Skill · Agent · Hook
 
 > 2026-06-06 발표 자료 중 부품 설명 부분. 이 부품으로 실제로 만든 것은
-> [FE 에이전틱 하네스 v2](../fe-harness-v2.draft).
+> [FE 에이전틱 하네스 v2](../../harness/fe-harness-v2.draft).
 
 ## Skill — 가장 작은 단위
 
@@ -295,7 +295,7 @@ console.log(JSON.stringify({
 
 "어? 타입체크 자동으로 하지 않았나?" 싶을 텐데, 위 `post-edit.sh`는 제 **개인 전역 설정**이지 fe-plugin이 아닙니다. 게다가 저건 "권장 알림"만 띄울 뿐, 실제로 타입체크를 *돌리진* 않아요.
 
-솔직히 처음부터 "hook 쓰지 말자"고 결정한 건 아니었습니다. 만들다 보니 안 쓰게 됐고, **돌아보니 이 일엔 hook보다 "절차"가 더 맞았더라고요.** 왜 그런지는 [FE 에이전틱 하네스 v2](../fe-harness-v2.draft) 에서 실제 구조로 볼 수 있습니다.
+솔직히 처음부터 "hook 쓰지 말자"고 결정한 건 아니었습니다. 만들다 보니 안 쓰게 됐고, **돌아보니 이 일엔 hook보다 "절차"가 더 맞았더라고요.** 왜 그런지는 [FE 에이전틱 하네스 v2](../../harness/fe-harness-v2.draft) 에서 실제 구조로 볼 수 있습니다.
 
 ### 그래서 플러그인이란?
 
@@ -321,6 +321,6 @@ console.log(JSON.stringify({
 
 > ⚠️ 단, 이건 **현재 시점** 기준입니다. fe-harness 는 계속 발전 중이라 구조가 바뀔 수 있습니다.
 
-→ 이 부품들이 실제로 어떻게 맞물려 도는지는 [FE 에이전틱 하네스 v2](../fe-harness-v2.draft) 가 보여줍니다.
+→ 이 부품들이 실제로 어떻게 맞물려 도는지는 [FE 에이전틱 하네스 v2](../../harness/fe-harness-v2.draft) 가 보여줍니다.
 
 ---

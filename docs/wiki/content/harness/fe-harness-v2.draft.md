@@ -2,7 +2,7 @@
 title: FE 에이전틱 하네스 v2
 description: 판단은 AI 가, 계산은 코드가 — 에이전트 5개 + EventStore 구조 (0.77)
 updated: 2026-06-06
-order: 3
+order: 2
 outline: deep
 ---
 
@@ -19,7 +19,7 @@ outline: deep
 
 저는 이를 재테크와 같은 거라고 생각했습니다. 돈이 돈을 굴리듯, **내가 자는 동안에도 AI가 내 반복 작업을 굴리게** 하는 것. 나를 대체하는 게 아니라, 제가 일하지 않을 때에도 일하게 만드는 거죠. (잠 잘때나 휴식 등)
 
-그 도구가 **fe-plugin(fe-harness)** 입니다. 부품이 되는 Skill·Agent·Hook 은 [Claude Code 플러그인 — 4가지 컴포넌트](./개념/plugin-components.draft) 가 다룹니다.
+그 도구가 **fe-plugin(fe-harness)** 입니다. 부품이 되는 Skill·Agent·Hook 은 [Skill · Agent · Hook](../claude-code/개념/plugin-components.draft) 가 다룹니다.
 
 만들면서 하나를 알게 됐습니다. **AI는 판단은 해도 산수는 못 합니다.** 같은 코드를 두 번 채점하면 점수가 다르게 나와요. 이 문장이 v2 전체를 가르는 선이 됩니다.
 

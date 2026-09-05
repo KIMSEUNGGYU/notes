@@ -1,11 +1,11 @@
 ---
-title: Claude Code 플러그인 — 에이전트 오케스트레이션 패턴
+title: 에이전트 오케스트레이션 패턴
 description: Claude Code에서 서브에이전트를 활용한 작업 오케스트레이션 패턴 정리
 order: 2
 outline: deep
 ---
 
-# Claude Code 플러그인 — 에이전트 오케스트레이션 패턴
+# 에이전트 오케스트레이션 패턴
 
 > 2026-02 기준. 인용한 OMC 설정 경로(`commands/`)는 그 시점 것으로, Custom Command 는
 > 이후 Skill 에 흡수됐다 — [Skill · Agent · Hook](./plugin-components.draft) 참고.

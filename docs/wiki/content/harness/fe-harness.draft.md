@@ -1,7 +1,7 @@
 ---
 title: FE 에이전틱 하네스 v1
 description: 코드 품질을 지키는 FE 에이전틱 하네스 — 3 에이전트 · 4 Phase · 자가학습
-order: 2
+order: 1
 outline: deep
 ---
 
