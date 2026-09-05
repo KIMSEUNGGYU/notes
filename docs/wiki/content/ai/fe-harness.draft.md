@@ -1,11 +1,13 @@
 ---
-title: FE 에이전틱 하네스
+title: FE 에이전틱 하네스 v1
 description: 코드 품질을 지키는 FE 에이전틱 하네스 — 3 에이전트 · 4 Phase · 자가학습
 order: 2
 outline: deep
 ---
 
-# FE 에이전틱 하네스
+# FE 에이전틱 하네스 v1
+
+> 이후 [v2](./fe-harness-v2.draft) 로 다시 만들었다. 지금 운영하는 건 v2 다.
 
 ## 읽기 전에 — 관련 개념
 
