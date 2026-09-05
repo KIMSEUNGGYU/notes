@@ -13,5 +13,13 @@
     "vitepress": "catalog:",
     "vitepress-sidebar": "^1.39.0",
     "vue": "catalog:"
+  },
+  "dependencies": {
+    "@braintree/sanitize-url": "^7.1.2",
+    "cytoscape": "^3.34.2",
+    "cytoscape-cose-bilkent": "^4.1.0",
+    "dayjs": "^1.11.23",
+    "debug": "^4.4.3",
+    "mermaid": "catalog:"
   }
 }

@@ -1,4 +1,5 @@
 import { defineConfig, type UserConfig } from 'vitepress';
+import { withMermaid } from 'vitepress-plugin-mermaid';
 import { getGoogleAnalyticsHead } from './ga.ts';
 import { isProduction } from './phase.ts';
 
@@ -100,13 +101,31 @@ export const sharedConfig = defineConfig({
   lastUpdated: true,
 });
 
+// mermaid 는 dayjs 등 CJS 의존성을 물고 온다. dev 서버에서 ESM 변환이 깨지지 않도록
+// 미리 번들(optimizeDeps)하고, SSR 에서는 외부화하지 않는다.
+const mermaidVite = {
+  optimizeDeps: { include: ['mermaid', 'dayjs'] },
+  ssr: { noExternal: ['mermaid'] },
+};
+
 export function mergeConfig(override: UserConfig) {
-  return defineConfig({
-    ...sharedConfig,
-    ...override,
-    themeConfig: {
-      ...sharedConfig.themeConfig,
-      ...override.themeConfig,
-    },
-  });
+  // withMermaid — ```mermaid 코드블록을 다이어그램으로 렌더. 두 사이트에 공통 적용
+  return withMermaid(
+    defineConfig({
+      ...sharedConfig,
+      ...override,
+      themeConfig: {
+        ...sharedConfig.themeConfig,
+        ...override.themeConfig,
+      },
+      vite: {
+        ...override.vite,
+        optimizeDeps: {
+          ...override.vite?.optimizeDeps,
+          include: [...(override.vite?.optimizeDeps?.include ?? []), ...mermaidVite.optimizeDeps.include],
+        },
+        ssr: { ...override.vite?.ssr, ...mermaidVite.ssr },
+      },
+    }),
+  );
 }

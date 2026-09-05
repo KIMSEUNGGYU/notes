@@ -15,5 +15,8 @@
     "gray-matter": "^4.0.3",
     "vitepress": "catalog:",
     "vue": "catalog:"
+  },
+  "dependencies": {
+    "mermaid": "catalog:"
   }
 }

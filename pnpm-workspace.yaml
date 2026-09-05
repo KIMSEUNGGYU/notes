@@ -1,8 +1,9 @@
 packages:
-  - 'docs/*'
-  - 'packages/*'
+  - docs/*
+  - packages/*
 
 catalog:
+  mermaid: 11.17.2
+  typescript: ^5.3.0
   vitepress: ^1.0.0
   vue: ^3.4.0
-  typescript: ^5.3.0
