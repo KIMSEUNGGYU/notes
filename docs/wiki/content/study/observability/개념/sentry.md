@@ -1,6 +1,7 @@
 ---
 title: Sentry
 description: 에러 수집 도구가 이벤트를 이슈로 묶어 보여주기까지
+order: 2
 outline: deep
 ---
 

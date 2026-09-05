@@ -44,6 +44,12 @@ const collator = new Intl.Collator('ko', { numeric: true, sensitivity: 'base' })
 
 // sortMenusByCustomFunction 은 sortMenusByName 과 같이 못 쓴다 — 이름 정렬까지 여기서 한다
 const sortMenus = (a: SidebarSortItem, b: SidebarSortItem) => {
+  // frontmatter 의 order 가 있으면 그 순서로 (기초 → 심화처럼 읽는 차례가 있을 때).
+  // 안 적은 문서는 뒤로 밀리고 이름순을 따른다.
+  const orderOf = (x: SidebarSortItem) => (typeof x.frontmatter?.order === 'number' ? x.frontmatter.order : Number.POSITIVE_INFINITY);
+  const orderGap = orderOf(a) - orderOf(b);
+  if (orderGap !== 0) return orderGap;
+
   const draftGap = Number(a.fileName.endsWith('.draft.md')) - Number(b.fileName.endsWith('.draft.md'));
   if (draftGap !== 0) return draftGap;
 

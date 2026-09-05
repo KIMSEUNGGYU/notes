@@ -2,6 +2,7 @@
 title: Sentry 구성
 description: 5개 서비스가 프로젝트 하나를 쓰는 배선과 수집 경로
 updated: 2026-08-20
+order: 1
 outline: deep
 ---
 

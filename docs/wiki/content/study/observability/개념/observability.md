@@ -1,6 +1,7 @@
 ---
 title: Observability
 description: 밖에서 보이는 것만으로 안에서 무슨 일이 났는지 답할 수 있는가
+order: 1
 outline: deep
 ---
 # Observability

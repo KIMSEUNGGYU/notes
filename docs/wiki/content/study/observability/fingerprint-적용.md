@@ -2,6 +2,7 @@
 title: fingerprint 적용
 description: stack 그룹핑이 우리 구조에서 틀리는 이유와 덮어쓰기
 updated: 2026-08-20
+order: 2
 outline: deep
 ---
 
