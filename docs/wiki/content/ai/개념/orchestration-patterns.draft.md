@@ -7,6 +7,9 @@ outline: deep
 
 # Claude Code 플러그인 — 에이전트 오케스트레이션 패턴
 
+> 2026-02 기준. 인용한 OMC 설정 경로(`commands/`)는 그 시점 것으로, Custom Command 는
+> 이후 Skill 에 흡수됐다 — [Skill · Agent · Hook](./plugin-components.draft) 참고.
+
 ## 지금 우리가 쓰는 Claude Code
 
 ```
@@ -24,12 +27,12 @@ outline: deep
 **핵심: 기억 공간(컨텍스트) 분리.**
 
 ```
-[메인 Claude] ──Task()──→ [새 Claude A] ──→ 결과만 반환
-              ──Task()──→ [새 Claude B] ──→ 결과만 반환
-              ──Task()──→ [새 Claude C] ──→ 결과만 반환
+[메인 Claude] ──Agent()──→ [새 Claude A] ──→ 결과만 반환
+              ──Agent()──→ [새 Claude B] ──→ 결과만 반환
+              ──Agent()──→ [새 Claude C] ──→ 결과만 반환
 ```
 
-- Task = 새 Claude를 하나 더 띄우는 것 (독립 기억 공간)
+- Agent 도구(예전엔 `Task`) = 새 Claude를 하나 더 띄우는 것 (독립 기억 공간)
 - 각자 독립 컨텍스트에서 작업 → **메인의 기억 공간은 깨끗하게 유지**
 - 메인은 결과만 받아서 종합 → 더 많은 작업을 안정적으로 처리
 
@@ -41,7 +44,7 @@ outline: deep
 
 ```
 ✅ 계획 수립
-✅ 작업 분배 (Task 호출)
+✅ 작업 분배 (Agent 도구 호출)
 ✅ 결과 종합 / 판단
 ✅ 실패 시 재시도 결정
 ❌ 직접 코드 작성 ← 에이전트에게 위임
@@ -86,16 +89,16 @@ description: Fully autonomous workflow from idea to working code
 **Phase 2. 설계** — architect에게 순차 위임
 
 ```
-Task(architect) → "로그인 페이지 구조 설계해줘"
+Agent(architect) → "로그인 페이지 구조 설계해줘"
                → 결과: 파일 목록, 컴포넌트 구조, API 스펙
 ```
 
 **Phase 3. 구현** — executor에게 병렬 위임
 
 ```
-Task(executor, "LoginForm 컴포넌트 만들어")  ─┐
-Task(executor, "useLogin 훅 만들어")          ├→ 동시 실행!
-Task(executor, "login API 함수 만들어")       ─┘
+Agent(executor, "LoginForm 컴포넌트 만들어")  ─┐
+Agent(executor, "useLogin 훅 만들어")          ├→ 동시 실행!
+Agent(executor, "login API 함수 만들어")       ─┘
 ```
 
 에이전트 티어로 비용 최적화:
@@ -108,7 +111,7 @@ executor-high (Opus)   — 복잡한 다중 파일
 **Phase 4. 검증** — verifier에게 순차 위임
 
 ```
-Task(verifier) → "빌드 돌려보고 결과 알려줘"
+Agent(verifier) → "빌드 돌려보고 결과 알려줘"
 → 실패 시 Phase 3로 돌아감
 → 성공 시 결과 보고
 ```
@@ -138,17 +141,17 @@ Task(verifier) → "빌드 돌려보고 결과 알려줘"
 ## 위임은 실제로 어떻게 동작하나?
 
 ```
-1. Command(autopilot.md)가 로드됨
+1. autopilot Skill 이 로드됨
 2. 메인 Claude가 지침을 읽음
 3. 지침에 "architect 에이전트에게 위임하라"고 적혀있음
-4. Task(subagent_type="plugin:architect") 호출
+4. Agent(subagent_type="plugin:architect") 호출
 5. architect.md의 역할 지시가 적용된 새 Claude 생성
 6. 새 Claude가 독립 컨텍스트에서 작업 수행
 7. 결과를 메인 Claude에게 반환
 8. 메인 Claude가 다음 단계 판단
 ```
 
-> Command가 대본, Agent가 배우, Task가 배우를 무대에 세우는 행위.
+> Skill 이 대본, Agent 가 배우, Agent 도구가 배우를 무대에 세우는 행위.
 
 
 
@@ -158,19 +161,19 @@ Task(verifier) → "빌드 돌려보고 결과 알려줘"
 
 ```
 메인 Claude (= 지휘자)
-  ├→ Task(설계)
-  ├→ Task(구현)
-  └→ Task(검증)
+  ├→ Agent(설계)
+  ├→ Agent(구현)
+  └→ Agent(검증)
 ```
 
 ### 패턴 B: 서브 에이전트가 지휘 (OMC 방식)
 
 ```
 메인 Claude
-  └→ Task(오케스트레이터 에이전트)  ← 지휘자도 서브 에이전트
-        ├→ Task(설계)
-        ├→ Task(구현)
-        └→ Task(검증)
+  └→ Agent(오케스트레이터 에이전트)  ← 지휘자도 서브 에이전트
+        ├→ Agent(설계)
+        ├→ Agent(구현)
+        └→ Agent(검증)
 ```
 
 ### 비교

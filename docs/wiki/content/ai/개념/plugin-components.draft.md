@@ -1,407 +1,326 @@
 ---
-title: Claude Code 플러그인 — 4가지 컴포넌트
-description: Skill · Command · Agent · Hook — 넷이 각각 뭘 하고 왜 같이 있어야 하는가
+title: Claude Code 플러그인 — Skill · Agent · Hook
+description: 부품 셋이 각각 뭘 하고 왜 같이 있어야 하는가
+updated: 2026-06-06
 order: 1
 outline: deep
 ---
 
-# Claude Code 플러그인 — 4가지 컴포넌트
+# Claude Code 플러그인 — Skill · Agent · Hook
 
-## 플러그인 이란?
+> 2026-06-06 발표 자료 중 부품 설명 부분. 이 부품으로 실제로 만든 것은
+> [FE 에이전틱 하네스 v2](../fe-harness-v2.draft).
 
-Claude Code에 기능을 추가하는 설정 묶음. 4개 컴포넌트로 구성.
+## Skill — 가장 작은 단위
+
+### Skill은 왜 나왔나? + 만드는 법
+
+Claude Code를 쓰다 보면 같은 지시를 매번 반복하게 됩니다.
+
+예를 들어 회의록 정리를 시킬 때마다 이렇게 칩니다:
+
+> "회의 내용 줄게. 참석자 / 안건 / 결정사항 / 액션아이템(담당자·기한)으로 정리해줘"
+
+문제는 두 가지입니다:
+
+- 매번 똑같은 지시를 길게 타이핑해야 함 (귀찮음)
+- 매번 조금씩 다르게 적게 됨 → 결과 포맷도 들쑥날쑥 (어제는 액션아이템, 오늘은 담당자를 빠뜨림)
+
+**그래서 Skill입니다.** 이 반복 지시를 파일에 한 번 적어두고, `/이름` 한 단어로 다시 꺼내 쓰는 거죠.
+
+> 자주 하는 요리의 레시피 카드를 만들어두는 것과 같습니다. 매번 재료와 순서를 떠올리는 대신, 카드 한 장 꺼내면 끝.
+
+정리하면 **Skill = AI 명령어 하나.** `/회의록`, `/커밋`처럼 `/이름`으로 부르는 나만의 명령어입니다.
+
+만드는 법은 딱 2가지만 지키면 됩니다:
 
 ```
-플러그인
- ├─ Skill     참고서 — 자동으로 기준/지식 로드
- ├─ Command   레시피 — 실행 절차 강제
- ├─ Agent     직원   — 전문가에게 작업 위임
- └─ Hook      알람   — 실시간 동작 교정
+~/.claude/skills/
+  └── 인사/              ← ① 폴더 이름 = /명령어 이름
+       └── SKILL.md      ← ② 이 파일에 AI에게 시킬 내용을 적는다
 ```
 
-
-## 1. Skill — 자동 로드되는 참고서
-
-### 개념
-
-- Claude가 **알아서 감지하고 자동 로드**하는 지식
-- `description` 필드가 매칭 키 역할
-- 본문에 담는 것 = **기준 (What)**
-
-### OMC 실제 설정: `skills/code-review/SKILL.md`
-
-```yaml
----
-name: code-review
-description: Run a comprehensive code review
----
-```
+`SKILL.md` 내용은 그냥 평범한 마크다운입니다:
 
 ```markdown
-# Code Review Skill
-
-## When to Use
-- User requests "review this code", "code review"
-- Before merging a pull request
-
-## Review Categories
-- Security — XSS, SQL injection, 하드코딩된 시크릿
-- Code Quality — 함수 크기, 복잡도, 네스팅
-
-## Severity Rating
-- CRITICAL / HIGH / MEDIUM / LOW
+오늘 날짜를 확인하고 이렇게 인사해줘:
+"좋은 아침이에요! 오늘은 {날짜} {요일}입니다."
 ```
 
-### 동작
+이게 전부입니다. **폴더 하나 + 파일 하나 = `/인사` 명령어 완성.** 진짜 5분이면 됩니다.
 
-```
-사용자: "코드 리뷰해줘"
-  → "code review" 매칭
-  → 스킬 본문이 Claude 컨텍스트에 주입
-  → Claude가 이 기준을 참고해서 리뷰
-```
+### 자동 호출 vs 수동 호출
 
-> Skill은 "뭘 봐야 하는지"만 알려줌. "어떤 순서로 할지"는 Claude 자유 → 품질 불안정할 수 있음
+Skill을 부르는 방법은 두 가지입니다.
 
+- **수동** — 내가 `/이름`을 직접 친다
+- **자동** — Claude가 상황을 보고 알아서 부른다
 
-## 2. Command — 절차를 강제하는 레시피
+자동 호출의 열쇠는 frontmatter(파일 맨 위 `---` 블록)의 **`description`** 필드입니다. Claude가 이 설명을 읽고 "지금 이 Skill을 쓸 때인가?"를 판단해요.
 
-### 개념
+제 fe-plugin의 실제 예제를 보겠습니다.
 
-- 사용자가 `/플러그인명:커맨드명`으로 **직접 호출**
-- 본문에 담는 것 = **절차 (How)**
-- 메인 Claude에게 주는 대본
-
-### OMC 실제 설정: `commands/autopilot.md`
+**① 자동형 — `fe-principles`** (코드 짤 때 알아서 끼어든다)
 
 ```yaml
 ---
-description: Fully autonomous workflow from idea to working code
+name: fe-principles
+description: >
+  FE 코드 작성 시 rules + patterns를 로드한다. ...
+  "컴포넌트 만들어줘", "API 연동", "코드 작성해줘", "구현해줘" 등.
 ---
 ```
 
-```markdown
-# Autopilot Command
+→ 제가 "로그인 컴포넌트 만들어줘"라고만 해도, Claude가 description의 키워드를 보고 **이 Skill을 알아서 로드**합니다. 제가 `/`를 칠 필요가 없어요.
 
-**YOU ARE AN ORCHESTRATOR, NOT AN IMPLEMENTER**
-- 파일 읽기, 진행 추적, 상태 전달만
-- 모든 코드 변경은 전문 에이전트로 위임
-
-## Phase 1. Expansion
-아이디어를 상세 스펙으로 확장
-
-## Phase 2. Planning
-구현 전략 개발
-
-## Phase 3. Execution
-병렬 에이전트로 코드 빌드
-- executor-low  (Haiku)  — 단순 단일 파일
-- executor      (Sonnet) — 표준 기능
-- executor-high (Opus)   — 복잡한 다중 파일
-
-## Phase 4. QA
-종합 테스트 및 검증
-
-## Phase 5. Validation
-다중 아키텍트 리뷰
-```
-
-### 동작
-
-```
-사용자: "/oh-my-claudecode:autopilot 로그인 페이지 만들어"
-  → Command 로드 (절차)
-  → 관련 Skill도 자동 로드 (기준) ← Command 실행 중에도 Skill은 자동 동작
-  → Claude가 절차 + 기준을 합쳐서 실행
-  → Phase 1 → 2 → 3 → 4 → 5 순서 강제
-```
-
-> Command를 호출하면 Skill도 함께 로드된다. 컨텍스트에 "code review", "architecture" 등의 키워드가 포함되면 해당 Skill이 자동으로 기준을 주입한다.
-> → **Command(절차) + Skill(기준)이 항상 같이 동작**하는 구조.
-
-
-## Skill + Command = 왜 둘 다 필요한가
-
-같은 "코드 리뷰"를 시키는 3가지 시나리오:
-
-**시나리오 A: Skill만 동작 (자연어)**
-
-```
-사용자: "코드 리뷰해줘"
-  → Skill 자동 로드 (기준만 주입)
-  → Claude가 알아서 리뷰
-  → 어떤 순서로 할지는 Claude 마음 → 품질 들쑥날쑥 ⚠️
-```
-
-**시나리오 B: Command 직접 호출**
-
-```
-사용자: "/oh-my-claudecode:code-review"
-  → Command 로드 (절차 주입)
-  → Skill도 자동 로드 (기준 주입) ← 컨텍스트에 "code review"가 있으니까
-  → 절차 + 기준이 합쳐져서 실행 → 품질 일정 ✅
-```
-
-**시나리오 C: Hook이 자연어 → Command 연결 (OMC 방식)**
-
-```
-사용자: "리뷰해줘"
-  → Hook이 "리뷰" 키워드 감지
-  → Command 워크플로우 자동 트리거
-  → 시나리오 B와 동일하게 실행 → 품질 일정 ✅
-```
-
-**정리:**
-
-```
-Skill만     → 기준 O 절차 X → 품질 들쑥날쑥
-Command만   → 절차 O 기준 X → 판단 근거 없음
-둘 다       → 기준 + 절차   → 일관된 품질 ✅
-Hook + 둘 다 → 자연어로도 워크플로우 트리거 ✅✅
-```
-
-| | Skill | Command |
-|---|---|---|
-| 담는 것 | "코드리뷰는 이 6가지를 봐" (기준) | "1단계: diff, 2단계: 에이전트 위임" (절차) |
-| 비유 | 참고서 | 레시피 |
-| 트리거 | 자동 감지 (+ `/`호출) | `/`호출만 (Hook으로 자동화 가능) |
-
-
-## 먼저 알 것: Task 도구
-
-Agent를 이해하려면 Task 도구를 먼저 알아야 한다.
-
-**Task = 새 Claude를 하나 더 띄우는 것.** 별도 대화창이 열린다고 생각하면 된다.
-
-```
-메인 Claude ──Task()──→ [새 Claude 인스턴스] ──→ 결과만 반환
-                         독립된 기억 공간(컨텍스트)
-                         서로 뭐 하는지 모름
-```
-
-- 여러 Task를 **동시에** 띄울 수 있음 (병렬 실행)
-- 각 인스턴스는 독립 컨텍스트 → 메인의 기억 공간을 아낄 수 있음
-- 내장 에이전트(`"Explore"`) 또는 플러그인 에이전트(`"plugin:architect"`) 지정 가능
-
-```
-// 내장 에이전트
-Task(subagent_type = "Explore", prompt = "로그인 관련 파일 찾아줘")
-
-// 플러그인 에이전트
-Task(subagent_type = "plugin:fe-workflow:architect", prompt = "로그인 페이지 설계해줘")
-```
-
-
-## 3. Agent — 역할이 제한된 전문가
-
-### 개념
-
-- Task()로 띄운 새 Claude에 **전문 역할을 부여**
-- `disallowedTools`로 할 수 있는 행동을 물리적으로 제한
-- `model`로 작업 난이도에 맞는 모델 지정
-
-### OMC 실제 설정: `agents/architect.md`
+**② 진입형 — `harness`** (보통 직접 부른다, 인자를 받으니까)
 
 ```yaml
 ---
-name: architect
-description: Strategic Architecture Advisor (READ-ONLY)
+name: harness
+description: "FE 하네스 — ... '하네스 실행', '자동 구현' 등으로 트리거."
+argument-hint: <요구사항 또는 파일 경로>
+user-invocable: true
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, ...
+---
+```
+
+→ `/fe:harness 주문 목록 페이지` 처럼 **인자(`argument-hint`)를 받아** 실행합니다. `allowed-tools`로 쓸 수 있는 도구도 정해뒀고요.
+
+제어 필드 두 개만 알면 됩니다:
+
+| 필드 | 효과 | 비유 |
+| --- | --- | --- |
+| `disable-model-invocation: true` | 자동 호출 끔 → **사용자만** `/`로 호출 | "묻기 전엔 나서지 마" |
+| `user-invocable: false` | 수동 호출 끔 → **Claude만** 자동 호출 | "무대 뒤에서만 일해" |
+
+(아무것도 안 적으면 둘 다 됩니다.)
+
+### 그런데 Command는 어디 갔지?
+
+예전 자료를 보면 `.claude/commands/` 에 파일을 넣는 **Custom Command**가 따로 있었습니다. "Skill이랑 뭐가 다르지?" 헷갈리셨을 텐데, 공식 문서가 정리해줍니다:
+
+> **Custom commands have been merged into skills.**
+> `.claude/commands/deploy.md` 와 `.claude/skills/deploy/SKILL.md` 는 **둘 다 똑같은 `/deploy`** 를 만들고 동일하게 작동한다.
+
+즉 **Command는 죽은 게 아니라, Skill이 Command를 흡수한 상위호환**입니다.
+
+```
+Command  =  슬래시로 부르는 기능                        (옛 이름)
+Skill    =  Command + 자동 호출 + 디렉토리 + 제어 필드   (지금)
+```
+
+그래서 제 fe-plugin도 `commands/` 폴더 없이 **전부 `skills/`로** 만들었습니다.
+
+### Skill의 한계 — 그래서 플러그인이 필요하다
+
+Skill은 강력하지만 한 가지 약점이 있습니다. **Skill은 "무엇을 보라"는 기준은 주지만, "어떤 순서로, 누가" 할지는 강제하지 못합니다.**
+
+예를 들어 "코드 리뷰해줘"를 Skill로만 시키면:
+
+```
+"코드 리뷰해줘"
+  → Skill이 기준은 로드함 (보안, 복잡도, 네이밍…)
+  → 근데 어떤 순서로 볼지는 Claude 마음
+  → 대화가 길어지면 기준을 잊기도 함
+  → 결과 품질이 들쑥날쑥 ⚠️
+```
+
+혼자 다 하는 만능 비서에게 "알아서 잘해줘"라고 맡긴 셈이라, 매번 결과가 다릅니다.
+
+**그래서 부품을 더합니다.** 일을 쪼개서 전문가(Agent)에게 맡기고, 실시간으로 교정(Hook)하고, 이걸 하나로 묶는 것 — 그게 바로 **Plugin**입니다.
+
+→ 그래서 부품을 더합니다.
+
+---
+
+## 플러그인 — 부품을 더해 한계를 넘는다
+
+Skill 혼자서는 "기준"은 줘도 "절차와 역할"을 강제하지 못합니다. 이걸 풀려면 부품 두 개가 더 필요합니다 — **Agent**(전문가)와 **Hook**(교정 장치). 그리고 이걸 하나로 묶은 게 Plugin입니다.
+
+### 먼저 알 것 — Agent 도구 (예전엔 Task)
+
+Agent를 이해하려면 도구 하나를 먼저 알아야 합니다. **Agent 도구**(예전엔 `Task`라고 불렀습니다)는 **새 Claude를 하나 더 띄우는 것**입니다. 별도의 대화창이 열린다고 보면 돼요.
+
+```
+메인 Claude ──Agent()──→ [새 Claude 인스턴스] ──→ 결과만 반환
+                          독립된 기억 공간(컨텍스트)
+                          서로 뭘 하는지 모름
+```
+
+세 가지 특징:
+
+- **독립 컨텍스트** — 새 Claude는 자기만의 기억 공간을 가짐. 메인의 대화 기록을 안 물려받아서, 메인의 기억 공간을 아낄 수 있음
+- **병렬 가능** — 여러 개를 동시에 띄울 수 있음
+- **위임** — 메인은 "지시"만 하고, 실제 작업은 새 Claude가 함
+
+이 "새 Claude"에 전문 역할을 부여한 게 바로 Agent입니다.
+
+### Agent — 도구가 제한된 전문가
+
+ 한 Claude가 설계도 하고, 코드도 짜고, 자기가 짠 걸 자기가 평가까지 하면 두 가지 문제가 생깁니다:
+
+- **컨텍스트가 꼬임** — 한 대화에 모든 게 쌓여 길어지고, 앞에 한 말을 잊음
+- **자기 채점의 함정** — 자기가 짠 코드를 자기가 평가하면 후하게 봄 (자기 선호 편향 - Self Bias ???)(사람도 그렇죠)
+
+**그래서 Agent입니다.** 일을 쪼개서, 각 역할을 **독립된 전문가 Claude**에게 맡깁니다. 코드 짜는 Claude 따로, 평가하는 Claude 따로. 서로의 사고 과정을 모르니 평가가 객관적이죠.
+
+**How — 역할을 "프롬프트"가 아니라 "도구"로 강제한다.**
+
+여기가 핵심입니다. "코드 고치지 마"라고 프롬프트로 부탁하면? 대화가 길어지면 잊고 고쳐버립니다. 그래서 아예 **도구 자체를 빼버립니다.**
+
+제 fe-plugin의 실제 두 에이전트를 보죠.
+
+**generator (코드 짜는 전문가)**
+
+```yaml
+---
+name: generator
 model: opus
-disallowedTools: Write, Edit
+disallowedTools: Bash, NotebookEdit
 ---
 ```
 
-```markdown
-# Architect Agent
+→ Write/Edit는 있어서 코드는 짜되, **Bash(실행)는 막음.** 직접 테스트 돌리지 말고 코드 구현에만 집중하라는 거죠.
 
-읽기 전용 컨설턴트. 코드 분석, 진단, 권장사항 제공.
-
-## 4단계 프로토콜
-1. 컨텍스트 수집 — 코드베이스 탐색
-2. 심층 분석 — 패턴, 의존성, 문제점 파악
-3. 권장사항 — 구체적 개선안 제시
-4. 검증 — 실현 가능성 확인
-```
-
-### OMC 실제 설정: `agents/executor.md`
+**evaluator (평가하는 전문가)**
 
 ```yaml
 ---
-name: executor
-description: Focused implementation task executor
-model: sonnet
-disallowedTools: Task
+name: evaluator
+model: opus
+disallowedTools: Write, Edit, Bash, NotebookEdit
 ---
 ```
 
-```markdown
-# Executor Agent
-
-직접 실행. 위임 없음.
-- Todo 중심 워크플로우
-- 완료 전 검증 필수 (빌드/테스트)
-```
-
-### 왜 프롬프트가 아니라 도구를 차단하나?
+→ **Write, Edit를 막음.** 평가자가 코드를 못 고치니, 고칠 생각 안 하고 **평가에만 집중**할 수밖에 없습니다.
 
 ```
-프롬프트: "코드 수정하지 마" → 대화 길어지면 무시 가능 ❌
-도구 차단: Write, Edit 제거  → 물리적으로 불가능 ✅
+프롬프트로 "고치지 마"     →  대화 길어지면 무시 가능 ❌
+도구에서 Write/Edit 제거   →  물리적으로 불가능 ✅
 ```
 
-OMC는 이 원칙으로 각 Agent의 역할 경계를 설계한다:
+비유하면, 채점하는 시험 감독관에게 **빨간펜만 주고 연필은 안 주는** 겁니다. 고칠 수단이 없으니 채점만 하죠. (그리고 `model: opus`로 작업 난이도에 맞는 모델도 지정합니다.)
 
-| Agent | model | 차단 도구 | 효과 |
-|---|---|---|---|
-| architect | opus | Write, Edit | 코드를 **못 고치니까** 분석에만 집중 |
-| executor | sonnet | Task | 위임을 **못 하니까** 직접 구현할 수밖에 없음 |
-| verifier | — | Write, Edit | 코드를 **못 고치니까** 검증에만 집중 |
+### Hook — 실시간 교정 장치
 
-**executor의 Task 차단이 특히 중요한 이유:**
+**아쉬움부터.** AI에게 "TS 파일 고치면 타입체크 꼭 해"라고 프롬프트로 한 번 말해두면? 역시 대화가 길어지면 잊습니다. 한 번 말한 규칙은 시간이 지나면 묻혀요.
+
+**그래서 Hook입니다.** Hook은 **특정 사건이 일어날 때마다 외부 코드(스크립트)를 자동 실행**하는 장치입니다. AI가 아니라 **컴퓨터가** 매번 끼어들어 챙기니까 절대 안 잊죠.
 
 ```
-Task 가능하면:  executor → Task(다른 executor) → Task(또 다른 executor) → ...
-               아무도 구현 안 하고 위임만 돌림 ❌
-
-Task 차단하면:  executor → 직접 코드 작성 → 완료
-               위임할 수단이 없으니 직접 할 수밖에 없음 ✅
+프롬프트에 한 번:  "타입체크 해" → 대화 길어지면 잊음 ❌
+Hook으로 매번:     파일 고칠 때마다 자동 실행 → 절대 안 잊음 ✅
 ```
 
+**How — 언제(이벤트) + 무엇을(스크립트).**
 
-## 4. Hook — 실시간 교정 장치
+Hook은 정해진 "사건(이벤트)"에 걸어둡니다. 자주 쓰는 것들:
 
-### 개념
+| 이벤트                | 언제                         |
+| ------------------ | -------------------------- |
+| `SessionStart`     | 세션 시작할 때                   |
+| `UserPromptSubmit` | 내가 메시지를 보낼 때               |
+| `PreToolUse`       | 도구 실행 **직전** (여기서 막을 수 있음) |
+| `PostToolUse`      | 도구 실행 **직후**               |
+| `Stop`             | Claude가 답변을 끝냈을 때          |
 
-- 이벤트 발생 시 **외부 스크립트(Node.js)가 자동 실행**
-- Claude 동작에 메시지를 주입하거나, 실행을 차단할 수 있음
-- Claude가 아닌 **외부 코드**가 실행됨
+입출력은 단순합니다. 스크립트가 **stdin으로 정보(JSON)를 받고**, 결과를 돌려줍니다.
 
-### OMC 실제 설정: `hooks/hooks.json`
+> 여기서 **"도구(tool)"**는 Claude의 내장 도구를 말합니다 — `Read`(읽기) · `Write`(생성) · `Edit`(수정) · `Bash`(명령 실행) · `Grep`(검색) 등. 맞아요, 그 bash/write/edit이요. "Edit 직전에 끼어들기", "Bash 직후 검사하기" 식으로 겁니다.
 
-```json
-{
-  "hooks": {
-    "UserPromptSubmit": [{
-      "matcher": "*",
-      "hooks": [{
-        "type": "command",
-        "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/keyword-detector.mjs\"",
-        "timeout": 5
-      }]
-    }],
-    "PreToolUse": [{
-      "matcher": "*",
-      "hooks": [{
-        "type": "command",
-        "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/pre-tool-enforcer.mjs\"",
-        "timeout": 3
-      }]
-    }],
-    "Stop": [{
-      "matcher": "*",
-      "hooks": [{
-        "type": "command",
-        "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/persistent-mode.cjs\"",
-        "timeout": 5
-      }]
-    }]
-  }
-}
+```
+이벤트 발생 (예: Edit 도구 실행 직후)
+  → stdin   { "tool_name": "Edit", "tool_input": { "file_path": "a.ts" } }
+  → 스크립트 실행
+  → 돌려주는 것 2가지:
+     ① exit code            exit 0 = 통과  /  exit 2 = 차단
+     ② additionalContext    Claude에게 추가로 넣어줄 한마디
 ```
 
-### OMC 실제 설정: `scripts/pre-tool-enforcer.mjs` (핵심 발췌)
+**`additionalContext`가 뭔가요?** hook이 Claude에게 말을 거는 통로입니다. 작업을 막는(차단) 게 아니라, **"참고로 이거 해"라고 Claude 귀에 한마디 더 넣는 것**이에요. 그러면 Claude가 그 문장을 읽고 다음 행동에 반영합니다. (바로 아래 예제 2에서 실제 코드로 보겠습니다.)
 
-```javascript
-const input = await readStdin();
-const toolName = extractJsonField(input, 'toolName');
+**실제 예제 — 제가 쓰는 hook입니다.** (`~/.claude/hooks/post-edit.sh`)
 
+```bash
+INPUT=$(cat)
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name')
+
+# Edit/Write로 .ts/.tsx 파일을 고치면
+if [ "$TOOL_NAME" = "Edit" ] || [ "$TOOL_NAME" = "Write" ]; then
+  FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path')
+  if [[ "$FILE" == *.ts ]] || [[ "$FILE" == *.tsx ]]; then
+    echo "typecheck 권장: pnpm typecheck" >&2   # 알림 띄우기
+  fi
+fi
+```
+
+→ TS 파일을 고칠 때마다 "타입체크 권장" 알림이 자동으로 뜹니다. **PostToolUse** 이벤트에 걸어둔 거죠.
+
+남이 만든 화려한 예시도 있습니다 (oh-my-claudecode 플러그인).
+
+**예제 2 — `additionalContext`로 Claude 행동 교정** (`PreToolUse`)
+
+도구를 쓰기 **직전**에, 도구 종류에 따라 다른 리마인더를 Claude에게 주입합니다:
+
+```js
+// 도구 이름별로 다른 한마디를 준비
 const messages = {
-  Task: "병렬 실행 가능한 작업은 동시에 실행하라",
   Bash: "독립적 작업은 병렬로. 긴 작업은 백그라운드로",
-  Edit: "수정 후 반드시 동작 검증하라",
+  Edit: "수정 후 반드시 동작을 검증하라",
   Read: "여러 파일을 읽을 때는 병렬로 읽어라",
 };
 
 console.log(JSON.stringify({
-  continue: true,
   hookSpecificOutput: {
-    additionalContext: messages[toolName]
-  }
+    additionalContext: messages[toolName],   // ← 이게 Claude에게 주입됨
+  },
 }));
 ```
 
-### 입출력 구조
+→ Claude가 `Bash`를 쓰려고 하면, 실행 직전에 *"독립적 작업은 병렬로"*라는 문장이 컨텍스트에 자동으로 끼어듭니다. 바로 이게 `additionalContext`예요.
 
-```
-이벤트 발생
-  ↓
-stdin  → { toolName: "Task", toolInput: {...} }
-  ↓
-스크립트 실행
-  ↓
-stdout → { continue: true,  ← true=진행, false=차단
-           hookSpecificOutput: {
-             additionalContext: "병렬로 해"  ← Claude에 주입할 메시지
-           }}
-```
-
-### 사용 가능한 이벤트
-
-| 이벤트 | 시점 |
-|---|---|
-| UserPromptSubmit | 사용자 메시지 전송 |
-| SessionStart | 세션 시작 |
-| PreToolUse | 도구 실행 직전 |
-| PostToolUse | 도구 실행 직후 |
-| SubagentStart/Stop | 서브 에이전트 시작/종료 |
-| PreCompact | 컨텍스트 압축 직전 |
-| Stop | Claude 응답 완료 |
-| SessionEnd | 세션 종료 |
-
-### OMC가 Hook을 쓰는 이유
-
-```
-프롬프트에 한 번:  "병렬로 해" → 대화 길어지면 잊음 ❌
-Hook으로 매번:     도구 쓸 때마다 주입 → 절대 안 잊음 ✅
-```
-
-**자연어 → Command 연결도 Hook이 한다:**
+**예제 3 — 자연어를 명령으로 연결** (`UserPromptSubmit`)
 
 ```
 "리뷰해줘"
-  → [Hook: keyword-detector] "리뷰" 감지
-  → Claude에게 "code-review Command를 실행해" 주입
-  → Command 워크플로우 동작
+  → UserPromptSubmit hook이 "리뷰" 키워드 감지
+  → additionalContext로 "코드리뷰 워크플로우를 실행하라" 주입
+  → Claude가 그 지시를 읽고 리뷰 절차를 시작
 ```
 
-→ 사용자는 자연어로 편하게, 실행은 Command 절차로 정확하게.
+사용자는 자연어로 편하게 말하고, 실행은 정해진 워크플로우로 정확하게 — 이걸 hook이 이어줍니다.
 
-## 전체 흐름
+**그런데 — 제 fe-plugin은 정작 hook을 안 씁니다.**
 
-```
-"리뷰해줘"
-  │
-  ↓
-[Hook]    키워드 감지 → Command 연결
-  ↓
-[Command] 절차 로드 + [Skill] 기준 로드
-  ↓
-메인 Claude (지휘자)
-  ↓ Task()
-[Hook]    리마인더 주입
-  ↓
-[Agent]   독립 실행
-  ↓
-[Hook]    결과 검증
-  ↓
-메인 Claude → 다음 판단
-```
+"어? 타입체크 자동으로 하지 않았나?" 싶을 텐데, 위 `post-edit.sh`는 제 **개인 전역 설정**이지 fe-plugin이 아닙니다. 게다가 저건 "권장 알림"만 띄울 뿐, 실제로 타입체크를 *돌리진* 않아요.
 
-## 정리
+솔직히 처음부터 "hook 쓰지 말자"고 결정한 건 아니었습니다. 만들다 보니 안 쓰게 됐고, **돌아보니 이 일엔 hook보다 "절차"가 더 맞았더라고요.** 왜 그런지는 [FE 에이전틱 하네스 v2](../fe-harness-v2.draft) 에서 실제 구조로 볼 수 있습니다.
 
-| 컴포넌트 | 한 줄 | OMC에서 배울 포인트 |
-|---|---|---|
-| **Skill** | 자동 로드되는 기준 | description으로 자동 매칭 |
-| **Command** | 절차를 강제하는 대본 | Phase 나열 + 에이전트 위임 지시 |
-| **Agent** | 도구가 제한된 전문가 | disallowedTools로 역할 강제, 모델 티어로 비용 최적화 |
-| **Hook** | 매번 끼어드는 교정 장치 | 리마인더 반복 주입, 자연어→Command 연결 |
+### 그래서 플러그인이란?
+
+지금까지의 부품을 정리하면:
+
+| 부품        | 한 줄                        | 비유         |
+| --------- | -------------------------- | ---------- |
+| **Skill** | 자동/수동으로 부르는 기준·명령          | 레시피 카드     |
+| **Agent** | ~~도구가 제한된~~  특정 전문가        | 빨간펜만 든 감독관 |
+| **Hook**  | 특정 이벤트(도구 실행·세션 시작 등)에 자동 실행되는 외부 스크립트. Claude 동작을 막거나(차단) 메시지를 주입(교정)한다 | 자동 알람      |
+| **MCP**   | 외부 서비스 연동 (Slack, Notion…) | 외부 콘센트     |
+
+**Plugin = 이 부품들을 하나로 묶어 배포하는 패키지**입니다. 마켓플레이스에서 설치하면 그 안의 Skill/Agent/Hook이 한 번에 딸려옵니다.
+
+참고로 **모든 부품을 다 써야 하는 건 아닙니다.** 제 fe-plugin은 이렇게 골라 썼어요:
+
+| 부품    | fe-plugin에서                                                           |
+| ----- | --------------------------------------------------------------------- |
+| Skill | ✅ 4개 (harness · fe-principles · review · reflect)                     |
+| Agent | ✅ 5개 (planner-spec · planner-todo · generator · evaluator · reviewer) |
+| Hook  | ❌ 안 씀 (절차로 대체)                                                        |
+| MCP   | ❌ 안 씀                                                                 |
+
+> ⚠️ 단, 이건 **현재 시점** 기준입니다. fe-harness 는 계속 발전 중이라 구조가 바뀔 수 있습니다.
+
+→ 이 부품들이 실제로 어떻게 맞물려 도는지는 [FE 에이전틱 하네스 v2](../fe-harness-v2.draft) 가 보여줍니다.
+
+---

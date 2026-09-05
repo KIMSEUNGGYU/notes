@@ -147,7 +147,7 @@ fe-workflow/
 | **Evaluator**    | sub-agent               | 4단계 코드 평가                                      | `Write, Edit, Bash, NotebookEdit` — **Read-only** |
 
 
-**Orchestrator는 Claude Code 메인 세션이 `/fe:harness` 스킬 프롬프트를 받아 수행하는 역할이다.** 별도 AI 에이전트가 아니다. 스킬 맨 첫 줄: *"너는 FE 하네스의 통합 Orchestrator다. 직접 코드를 작성하지 않는다. Agent에게 위임하고 흐름을 제어한다."* → 메인 세션이 이 지시대로 동작하며, Task 도구로 Planner/Generator/Evaluator sub-agent를 스폰한다.
+**Orchestrator는 Claude Code 메인 세션이 `/fe:harness` 스킬 프롬프트를 받아 수행하는 역할이다.** 별도 AI 에이전트가 아니다. 스킬 맨 첫 줄: *"너는 FE 하네스의 통합 Orchestrator다. 직접 코드를 작성하지 않는다. Agent에게 위임하고 흐름을 제어한다."* → 메인 세션이 이 지시대로 동작하며, Agent 도구(발표 당시 이름은 `Task`)로 Planner/Generator/Evaluator sub-agent 를 스폰한다.
 
 **Evaluator의 `Write/Edit` 제거가 핵심:** 수정 도구가 있으면 "내가 고쳐줄게"로 리뷰가 흐트러짐. 도구를 빼서 **구조적으로** 평가에만 집중시킴. ([도구 제한](./개념/에이전틱과-하네스.draft#_4-도구-제한-tool-restriction))
 
