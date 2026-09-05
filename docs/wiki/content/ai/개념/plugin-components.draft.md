@@ -1,6 +1,7 @@
 ---
 title: Claude Code 플러그인 — 4가지 컴포넌트
 description: Skill · Command · Agent · Hook — 넷이 각각 뭘 하고 왜 같이 있어야 하는가
+order: 1
 outline: deep
 ---
 

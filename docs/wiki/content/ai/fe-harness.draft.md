@@ -1,10 +1,11 @@
 ---
-title: fe-harness
-description: 에이전틱과 하네스를 FE 코드 품질 자동화에 적용한 플러그인
+title: FE 에이전틱 하네스
+description: 코드 품질을 지키는 FE 에이전틱 하네스 — 3 에이전트 · 4 Phase · 자가학습
+order: 2
 outline: deep
 ---
 
-# fe-harness
+# FE 에이전틱 하네스
 
 ## 읽기 전에 — 관련 개념
 

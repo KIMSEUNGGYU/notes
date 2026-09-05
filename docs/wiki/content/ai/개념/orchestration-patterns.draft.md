@@ -1,6 +1,7 @@
 ---
 title: Claude Code 플러그인 — 에이전트 오케스트레이션 패턴
 description: Claude Code에서 서브에이전트를 활용한 작업 오케스트레이션 패턴 정리
+order: 2
 outline: deep
 ---
 
