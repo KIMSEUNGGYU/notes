@@ -1,0 +1,180 @@
+---
+title: Sentry
+description: 에러 수집 도구가 이벤트를 이슈로 묶어 보여주기까지
+order: 1
+outline: deep
+---
+
+# Sentry
+
+> 참고: [우아한형제들 Sentry 최적화](https://techblog.woowahan.com/21604/) · [카카오페이 FE Sentry](https://tech.kakaopay.com/post/frontend-sentry-monitoring/)
+
+## 0. Sentry란 — 전반적인 그림
+
+프로덕션에서 난 에러를 실시간으로 수집·분석하는 모니터링 플랫폼. 핵심 가치는 "사용자가 알려주기 전에, 재현 없이" 아는 것 — QA에서 재현 안 되는 특정 브라우저·기기·타이밍의 에러가 사용자 화면에서 나는 순간 기록이 남는다.
+
+동작 흐름:
+
+```
+앱에서 에러 발생
+  → SDK가 이벤트로 만들어 전송 (에러 + 기기·브라우저·OS + breadcrumbs)
+  → Sentry 서버가 이슈로 그룹핑
+  → 알림 규칙에 걸리면 Slack 등으로 통지
+```
+
+**breadcrumbs** — 에러 직전까지의 행적(클릭, 페이지 이동, 콘솔, 네트워크 요청)이 자동 기록돼 이슈에서 보인다. 기본 100개까지 쌓이고(`maxBreadcrumbs`), 이벤트 크기 상한을 넘기면 이벤트가 통째로 버려지니 무한정 늘리면 안 된다. 에러와 무관하게 남기는 로그는 [Logs](#_4-logs-—-sentry가-로그도-받는다) 가 따로 담당한다.
+
+## 1. 이벤트와 이슈 — Sentry의 두 층
+
+```
+이벤트 = 에러 발생 1건            (사용자 한 명이 400을 받음 → 이벤트 1개)
+이슈   = 같은 원인끼리 묶은 폴더   (목록에서 보는 한 줄)
+```
+
+이벤트가 들어올 때마다 Sentry는 "기존 어느 이슈에 넣을까, 새 이슈를 만들까"를 정한다. 이 판정 키가 **fingerprint**다. 목록에서 보고 검색하고 resolve하는 단위는 전부 이슈다.
+
+## 2. SDK 초기화 — instrumentation 파일과 DSN
+
+### instrumentation
+
+**"계측"이라는 뜻의 일반 용어다.** 코드에 관찰 장치를 심어 밖에서 안을 볼 수 있게 만드는 일을 가리키고, OpenTelemetry 같은 관측 표준에서도 같은 말을 쓴다. Next.js가 만든 개념이 아니다.
+
+**Next.js 것은 파일 이름과 실행 시점 규약이다** — "`instrumentation.ts`라는 이름으로 두면 앱 코드보다 먼저 실행시켜줄 테니, 관찰 도구(모니터링·로깅)는 여기서 켜라"는 자리를 정해둔 것. 에러를 잡으려면 에러가 나기 전에 켜져 있어야 해서 `Sentry.init()`이 여기 산다.
+
+Sentry는 그 자리를 빌려 쓸 뿐이라, 다른 관측 도구도 같은 파일에서 켠다.
+
+```
+instrumentation-client.ts  → 브라우저에서 앱 번들보다 먼저 실행 (브라우저용 init)
+instrumentation.ts         → 서버 프로세스가 뜰 때 1회 실행되는 register()가
+                             런타임에 따라 sentry.server.config.ts 또는
+                             sentry.edge.config.ts를 import (서버용 init)
+```
+
+파일이 3개인 이유: Next.js는 브라우저 / Node 서버 / 엣지 세 런타임에서 돌아서, 런타임마다 init을 따로 한 번씩 해주는 구조다.
+
+### DSN
+
+**Data Source Name.** `Sentry.init({ dsn })`에 넣는, 이벤트를 어느 프로젝트로 보낼지 알려주는 주소 + 공개키다.
+
+```
+https://abc123def456@o12345.ingest.sentry.io/7890123
+└프로토콜┘ └── 공개키 ──┘└──── Sentry 서버 주소 ────┘└프로젝트 ID┘
+```
+
+**비밀키가 아니다** — 브라우저 번들에 어차피 노출되고, DSN으로 할 수 있는 건 "이벤트 넣기"뿐이라 쌓인 데이터를 읽을 수는 없다. 그래서 공개돼도 안전하다고 공식 문서가 명시한다.
+
+(예전 형식에는 공개키 뒤에 비밀키가 하나 더 붙었는데 지금은 폐기됐다.)
+
+## 3. Level — 심각도
+
+`fatal / error(기본) / warning / info / debug`. 이벤트마다 붙는 심각도 분류로, 알림 규칙에서 "fatal만 즉시 알림" 같은 필터로 쓴다.
+
+우아한형제들 기준: 화면 렌더 불가·필수 기능 마비 = fatal / 예상 못한 미처리 에러 = error / 예상 가능하고 영향 없음(타임아웃 등) = warning.
+
+## 4. Logs — Sentry가 로그도 받는다
+
+에러와 별개로 **텍스트 로그를 구조화해서 보내는 기능.** SDK v10.71.0 부터는 기본으로 켜져 있고 옵션 자체가 없다. 9.41.0 ~ 10.70 은 `enableLogs: true` 를 직접 줘야 한다.
+
+```ts
+Sentry.logger.info('결제 위젯 로드', { widgetId, retryCount });
+```
+
+breadcrumbs와 헷갈리기 쉬운데 성격이 다르다:
+
+```
+breadcrumbs  에러 이벤트에 딸려 오는 행적. 에러가 나야 보인다
+Logs         에러와 무관하게 독립적으로 쌓인다. 안 터져도 남는다
+```
+
+**모든 로그가 그때 활성화된 트레이스에 자동으로 연결된다** — 로그 하나에서 그 요청의 span·에러로 넘어갈 수 있다. 관측의 세 기둥 중 로그 축을 Sentry가 직접 담당하게 된 변화다 (→ [Observability §세 기둥](../observability#세-기둥)).
+
+주의 — 태그는 로그에 안 붙는다. 로그에는 Attributes를 쓴다 (SDK 10.61.0+).
+
+## 5. 이슈 라이프사이클
+
+상태는 여섯이고, 그중 넷이 `is:unresolved`에 든다.
+
+```
+New ─▶ Ongoing ─┬─ resolve ──▶ Resolved ── 새 이벤트 ──▶ Regressed
+                │                                          (자동 재오픈)
+                ├─ archive ──▶ Archived ── 이벤트 급증 ──▶ Escalating
+                │                                          (자동 재오픈)
+                └────────────────────────▶ Escalating
+
+is:unresolved 에 드는 것 — New · Ongoing · Escalating · Regressed
+```
+
+- **New / Ongoing** — 갓 생긴 이슈와 계속 나고 있는 이슈. 알림 조건에서 "새로 생긴 것만"을 가를 때 쓴다
+- **Resolved** — "고쳤다"는 표시. 목록 기본 필터에서 사라진다. 배포로 고친 건 "Resolve in next release"로 버전과 묶을 수 있다 (release 설정 필요)
+- **Regressed** — resolve된 이슈에 같은 fingerprint 이벤트가 다시 오면 자동으로 되살아난다. "고쳤다고 믿었는데 재발"을 잡는 장치
+- **Archived** — 알림을 끄고 목록에서 내린다. 되살아날 조건을 고를 수 있다(급증 시 · 영원히 · N일 뒤 · N건 뒤 · 영향 사용자 N명 뒤). **"영원히"로 묻으면 급증해도 안 깨어난다**
+- **Escalating** — 이슈가 **예측된 발생량을 넘겼을 때** 자동으로 붙는 상태. 묻어둔 이슈가 갑자기 커지면 여기로 올라온다
+
+**Regressed와 Escalating은 다르다** — 앞은 "고쳤다고 한 게 재발", 뒤는 "안 고친 게 갑자기 심해짐"이다.
+
+**resolve가 의미를 가지려면 이슈가 잘 갈라져 있어야 한다.** 여러 원인이 한 이슈에 뭉쳐 있으면 하나 고쳐 resolve해도 다른 원인이 regression으로 되살린다. fingerprint를 손봐야 하는 이유 중 하나다.
+
+## 6. dataCollection — SDK 자동 수집의 스위치
+
+**SDK가 자동으로 덧붙이는 민감 정보**를 보낼지 정하는 옵션. v10.57.0 부터 있고 카테고리 여덟으로 갈라져 있다.
+
+```
+dataCollection: {
+  userInfo,             // 사용자 식별 정보 (id·email·username·IP)
+  httpBodies,           // 요청·응답 본문
+  httpHeaders,          // 요청·응답 헤더
+  cookies,
+  urlQueryParams,       // 쿠키·쿼리는 민감값 스크러빙이 기본으로 걸린다
+  genAI,                // AI 입출력 내용
+  stackFrameVariables,  // 스택 프레임의 지역 변수 값
+  frameContextLines,    // 스택 프레임 주변 소스 코드 줄
+}
+```
+
+**`sendDefaultPii`는 deprecated다** (v11에서 제거 예정). `sendDefaultPii: true`는 "여덟 카테고리 전부 켜기"와 같고, 둘 다 설정하면 `dataCollection`이 이긴다. 예전의 `sendDefaultPii: false`를 유지하려면 카테고리마다 명시적으로 꺼야 한다.
+
+주의 둘:
+
+- **코드로 직접 넣는 값은 이 옵션과 무관하게 전송된다.** `Sentry.setUser()`로 넣은 것도, `extra: { body }`도 그대로 간다. 이 옵션은 "SDK가 알아서 붙이는 것"만 다룬다
+- 그래서 PII를 막는 자리는 두 곳이다 — 자동 수집은 여기서, 직접 넣는 값은 넣는 코드에서
+
+## 7. 수집을 거르는 층
+
+전송 전(SDK)과 전송 후(서버)로 갈린다. **어느 쪽이든 걸러진 건 쿼터를 안 먹는다.**
+
+```
+SDK 층 (배포 필요)
+├─ 조건부 호출      capture 를 아예 안 부른다. "이 상태코드는 안 보낸다"
+├─ ignoreErrors     메시지 문자열·정규식으로 거른다
+├─ denyUrls         stack 의 스크립트 URL 로 거른다 (서드파티 위젯 등)
+└─ beforeSend       보내기 직전 코드로 판단, null 반환하면 미전송
+                    (트랜잭션은 beforeSendTransaction 이 따로 있다)
+
+서버 층 (배포 불필요)
+└─ Inbound Filters  Sentry 설정 화면. 문자열 패턴만 가능
+```
+
+**쿼터를 먹는 것과 안 먹는 것을 가르는 선은 "받아들여졌나"다.** Inbound Filter · Rate Limiting · Spike Protection 은 셋 다 받아들이기 전에 거절하므로 쿼터를 안 먹는다 (2026-09-08 공식 문서 확인). 쿼터를 먹는 건 이 관문을 다 통과해 Sentry 가 받아들인 이벤트뿐이다.
+
+## 8. 쿼터 — 요금제의 이벤트 한도
+
+월간 받아주는 이벤트 개수가 요금제로 정해져 있고, 다 쓰면 이후 이벤트가 버려진다. 우아한형제들은 이 문제로 **중요 장애 로그의 80%를 유실**한 적이 있다.
+
+400과 500은 터지는 방식이 다르다 — 400은 개인별로 고르게, 500은 장애 순간에 전원 동시에(수천 건). 500을 수집하려면 Inbound Filter·threshold로 폭주 대비가 필요한 이유다.
+
+## 9. Replay — 에러 순간의 화면 녹화
+
+에러 발생 세션의 화면을 녹화해 이슈에서 재생한다. 표본 비율을 둘로 나눠 잡는다:
+
+```
+replaysOnErrorSampleRate  에러가 난 세션 중 몇 %를 녹화할까
+replaysSessionSampleRate  평상시 세션 중 몇 %를 녹화할까
+```
+
+`networkDetailAllowUrls`에 등록된 도메인은 요청/응답 본문까지 Replay의 Network 탭에서 보인다 — 외부 연동 실패의 응답 본문을 확인하는 경로가 된다.
+
+## 10. 소스맵 / release / environment
+
+- **소스맵** — 배포된 코드는 압축·난독화돼 있어 stack이 `a.js:1:38271`처럼 나온다. 빌드 때 소스맵을 Sentry에 업로드해두면 원본 파일·줄 번호로 복원해 보여준다. Next.js는 `next.config.ts`의 `withSentryConfig`가 처리한다
+- **release** — 배포 버전을 이벤트에 붙여 "어느 배포부터 났는지" 추적한다. 소스맵을 버전에 매칭하는 키이기도 하다. "Resolve in next release"도 이게 있어야 동작한다
+- **environment** — 이벤트에 붙는 환경 구분(local/dev/live 등). 검색·알림 필터로 사용한다. **64자 이내이고 공백·줄바꿈·슬래시와 문자열 `None` 을 못 쓴다**. 대소문자를 구분한다
