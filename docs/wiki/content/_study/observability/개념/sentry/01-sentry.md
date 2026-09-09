@@ -114,55 +114,7 @@ is:unresolved 에 드는 것 — New · Ongoing · Escalating · Regressed
 
 **resolve가 의미를 가지려면 이슈가 잘 갈라져 있어야 한다.** 여러 원인이 한 이슈에 뭉쳐 있으면 하나 고쳐 resolve해도 다른 원인이 regression으로 되살린다. fingerprint를 손봐야 하는 이유 중 하나다.
 
-## 6. dataCollection — SDK 자동 수집의 스위치
-
-**SDK가 자동으로 덧붙이는 민감 정보**를 보낼지 정하는 옵션. v10.57.0 부터 있고 카테고리 여덟으로 갈라져 있다.
-
-```
-dataCollection: {
-  userInfo,             // 사용자 식별 정보 (id·email·username·IP)
-  httpBodies,           // 요청·응답 본문
-  httpHeaders,          // 요청·응답 헤더
-  cookies,
-  urlQueryParams,       // 쿠키·쿼리는 민감값 스크러빙이 기본으로 걸린다
-  genAI,                // AI 입출력 내용
-  stackFrameVariables,  // 스택 프레임의 지역 변수 값
-  frameContextLines,    // 스택 프레임 주변 소스 코드 줄
-}
-```
-
-**`sendDefaultPii`는 deprecated다** (v11에서 제거 예정). `sendDefaultPii: true`는 "여덟 카테고리 전부 켜기"와 같고, 둘 다 설정하면 `dataCollection`이 이긴다. 예전의 `sendDefaultPii: false`를 유지하려면 카테고리마다 명시적으로 꺼야 한다.
-
-주의 둘:
-
-- **코드로 직접 넣는 값은 이 옵션과 무관하게 전송된다.** `Sentry.setUser()`로 넣은 것도, `extra: { body }`도 그대로 간다. 이 옵션은 "SDK가 알아서 붙이는 것"만 다룬다
-- 그래서 PII를 막는 자리는 두 곳이다 — 자동 수집은 여기서, 직접 넣는 값은 넣는 코드에서
-
-## 7. 수집을 거르는 층
-
-전송 전(SDK)과 전송 후(서버)로 갈린다. **어느 쪽이든 걸러진 건 쿼터를 안 먹는다.**
-
-```
-SDK 층 (배포 필요)
-├─ 조건부 호출      capture 를 아예 안 부른다. "이 상태코드는 안 보낸다"
-├─ ignoreErrors     메시지 문자열·정규식으로 거른다
-├─ denyUrls         stack 의 스크립트 URL 로 거른다 (서드파티 위젯 등)
-└─ beforeSend       보내기 직전 코드로 판단, null 반환하면 미전송
-                    (트랜잭션은 beforeSendTransaction 이 따로 있다)
-
-서버 층 (배포 불필요)
-└─ Inbound Filters  Sentry 설정 화면. 문자열 패턴만 가능
-```
-
-**쿼터를 먹는 것과 안 먹는 것을 가르는 선은 "받아들여졌나"다.** Inbound Filter · Rate Limiting · Spike Protection 은 셋 다 받아들이기 전에 거절하므로 쿼터를 안 먹는다 (2026-09-08 공식 문서 확인). 쿼터를 먹는 건 이 관문을 다 통과해 Sentry 가 받아들인 이벤트뿐이다.
-
-## 8. 쿼터 — 요금제의 이벤트 한도
-
-월간 받아주는 이벤트 개수가 요금제로 정해져 있고, 다 쓰면 이후 이벤트가 버려진다. 우아한형제들은 이 문제로 **중요 장애 로그의 80%를 유실**한 적이 있다.
-
-400과 500은 터지는 방식이 다르다 — 400은 개인별로 고르게, 500은 장애 순간에 전원 동시에(수천 건). 500을 수집하려면 Inbound Filter·threshold로 폭주 대비가 필요한 이유다.
-
-## 9. Replay — 에러 순간의 화면 녹화
+## 6. Replay — 에러 순간의 화면 녹화
 
 에러 발생 세션의 화면을 녹화해 이슈에서 재생한다. 표본 비율을 둘로 나눠 잡는다:
 
@@ -173,7 +125,7 @@ replaysSessionSampleRate  평상시 세션 중 몇 %를 녹화할까
 
 `networkDetailAllowUrls`에 등록된 도메인은 요청/응답 본문까지 Replay의 Network 탭에서 보인다 — 외부 연동 실패의 응답 본문을 확인하는 경로가 된다.
 
-## 10. 소스맵 / release / environment
+## 7. 소스맵 / release / environment
 
 - **소스맵** — 배포된 코드는 압축·난독화돼 있어 stack이 `a.js:1:38271`처럼 나온다. 빌드 때 소스맵을 Sentry에 업로드해두면 원본 파일·줄 번호로 복원해 보여준다. Next.js는 `next.config.ts`의 `withSentryConfig`가 처리한다
 - **release** — 배포 버전을 이벤트에 붙여 "어느 배포부터 났는지" 추적한다. 소스맵을 버전에 매칭하는 키이기도 하다. "Resolve in next release"도 이게 있어야 동작한다
