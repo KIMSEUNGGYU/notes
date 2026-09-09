@@ -17,7 +17,7 @@ outline: deep
 | 프로젝트 하나를 5개 서비스가 쓴다 | [조직 구조와 화면 구성](./개념/sentry/07-project) |
 | 수집이 세 군데 배선돼 있다 | [수집 경로](./개념/sentry/04-collect) |
 | 태그는 붙는데 extra 가 비었다 | [이벤트에 실리는 정보 3종](./개념/sentry/06-scope#_2-담기는-내용-—-태그-·-extra-·-context) |
-| 설정값 현황 | [Level](./개념/sentry/01-sentry#_3-level-—-심각도) · [dataCollection](./개념/sentry/08-quota#_4-datacollection-—-sdk-자동-수집의-스위치) · [성능 트레이싱](./개념/sentry/03-trace) · [Replay](./개념/sentry/01-sentry#_6-replay-—-에러-순간의-화면-녹화) · [소스맵 / release / environment](./개념/sentry/01-sentry#_7-소스맵-release-environment) |
+| 설정값 현황 | [Level](./개념/sentry/01-sentry#_3-level-—-심각도) · [dataCollection](./개념/sentry/08-quota#_4-datacollection-—-sdk-자동-수집의-스위치) · [성능 트레이싱](./개념/sentry/03-trace) · [Replay](./개념/sentry/01-sentry#_5-replay-—-에러-순간의-화면-녹화) · [소스맵 / release / environment](./개념/sentry/01-sentry#_6-소스맵-release-environment) |
 | 트레이스 축이 비어 있다는 뜻 | [Observability 의 세 기둥](./개념/observability#세-기둥) |
 
 ## 프로젝트를 하나로 합쳤다
@@ -74,9 +74,9 @@ instrumentation-client.ts setTags({ service })
 | `sendDefaultPii` | 5개 전부 `true` ⚠️ deprecated | [dataCollection](./개념/sentry/08-quota#_4-datacollection-—-sdk-자동-수집의-스위치) |
 | level | 전부 기본값 `error` | [Level](./개념/sentry/01-sentry#_3-level-—-심각도) |
 | `tracesSampleRate` | **5개 전부 미설정** | [성능 트레이싱](./개념/sentry/03-trace) |
-| Replay (에러 세션) | 100% · bank·visit-admin은 50% | [Replay](./개념/sentry/01-sentry#_6-replay-—-에러-순간의-화면-녹화) |
+| Replay (에러 세션) | 100% · bank·visit-admin은 50% | [Replay](./개념/sentry/01-sentry#_5-replay-—-에러-순간의-화면-녹화) |
 | Replay (일반 세션) | 1% | 〃 |
-| 소스맵 | `withSentryConfig` 자동 | [소스맵](./개념/sentry/01-sentry#_7-소스맵-release-environment) |
+| 소스맵 | `withSentryConfig` 자동 | [소스맵](./개념/sentry/01-sentry#_6-소스맵-release-environment) |
 | environment | `getPhase()` (local/dev/live) | 〃 |
 | release | ⚠️ 미확인 | 〃 |
 

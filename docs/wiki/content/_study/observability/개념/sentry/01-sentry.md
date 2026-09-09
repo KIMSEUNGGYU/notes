@@ -90,31 +90,7 @@ Logs         에러와 무관하게 독립적으로 쌓인다. 안 터져도 남
 
 주의 — 태그는 로그에 안 붙는다. 로그에는 Attributes를 쓴다 (SDK 10.61.0+).
 
-## 5. 이슈 라이프사이클
-
-상태는 여섯이고, 그중 넷이 `is:unresolved`에 든다.
-
-```
-New ─▶ Ongoing ─┬─ resolve ──▶ Resolved ── 새 이벤트 ──▶ Regressed
-                │                                          (자동 재오픈)
-                ├─ archive ──▶ Archived ── 이벤트 급증 ──▶ Escalating
-                │                                          (자동 재오픈)
-                └────────────────────────▶ Escalating
-
-is:unresolved 에 드는 것 — New · Ongoing · Escalating · Regressed
-```
-
-- **New / Ongoing** — 갓 생긴 이슈와 계속 나고 있는 이슈. 알림 조건에서 "새로 생긴 것만"을 가를 때 쓴다
-- **Resolved** — "고쳤다"는 표시. 목록 기본 필터에서 사라진다. 배포로 고친 건 "Resolve in next release"로 버전과 묶을 수 있다 (release 설정 필요)
-- **Regressed** — resolve된 이슈에 같은 fingerprint 이벤트가 다시 오면 자동으로 되살아난다. "고쳤다고 믿었는데 재발"을 잡는 장치
-- **Archived** — 알림을 끄고 목록에서 내린다. 되살아날 조건을 고를 수 있다(급증 시 · 영원히 · N일 뒤 · N건 뒤 · 영향 사용자 N명 뒤). **"영원히"로 묻으면 급증해도 안 깨어난다**
-- **Escalating** — 이슈가 **예측된 발생량을 넘겼을 때** 자동으로 붙는 상태. 묻어둔 이슈가 갑자기 커지면 여기로 올라온다
-
-**Regressed와 Escalating은 다르다** — 앞은 "고쳤다고 한 게 재발", 뒤는 "안 고친 게 갑자기 심해짐"이다.
-
-**resolve가 의미를 가지려면 이슈가 잘 갈라져 있어야 한다.** 여러 원인이 한 이슈에 뭉쳐 있으면 하나 고쳐 resolve해도 다른 원인이 regression으로 되살린다. fingerprint를 손봐야 하는 이유 중 하나다.
-
-## 6. Replay — 에러 순간의 화면 녹화
+## 5. Replay — 에러 순간의 화면 녹화
 
 에러 발생 세션의 화면을 녹화해 이슈에서 재생한다. 표본 비율을 둘로 나눠 잡는다:
 
@@ -125,7 +101,7 @@ replaysSessionSampleRate  평상시 세션 중 몇 %를 녹화할까
 
 `networkDetailAllowUrls`에 등록된 도메인은 요청/응답 본문까지 Replay의 Network 탭에서 보인다 — 외부 연동 실패의 응답 본문을 확인하는 경로가 된다.
 
-## 7. 소스맵 / release / environment
+## 6. 소스맵 / release / environment
 
 - **소스맵** — 배포된 코드는 압축·난독화돼 있어 stack이 `a.js:1:38271`처럼 나온다. 빌드 때 소스맵을 Sentry에 업로드해두면 원본 파일·줄 번호로 복원해 보여준다. Next.js는 `next.config.ts`의 `withSentryConfig`가 처리한다
 - **release** — 배포 버전을 이벤트에 붙여 "어느 배포부터 났는지" 추적한다. 소스맵을 버전에 매칭하는 키이기도 하다. "Resolve in next release"도 이게 있어야 동작한다
