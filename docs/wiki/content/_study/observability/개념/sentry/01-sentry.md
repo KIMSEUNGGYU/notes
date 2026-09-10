@@ -4,7 +4,6 @@ description: 에러 수집 도구가 이벤트를 이슈로 묶어 보여주기�
 order: 1
 outline: deep
 ---
-
 # Sentry
 
 > 참고: [우아한형제들 Sentry 최적화](https://techblog.woowahan.com/21604/) · [카카오페이 FE Sentry](https://tech.kakaopay.com/post/frontend-sentry-monitoring/)
@@ -101,8 +100,58 @@ replaysSessionSampleRate  평상시 세션 중 몇 %를 녹화할까
 
 `networkDetailAllowUrls`에 등록된 도메인은 요청/응답 본문까지 Replay의 Network 탭에서 보인다 — 외부 연동 실패의 응답 본문을 확인하는 경로가 된다.
 
-## 6. 소스맵 / release / environment
 
-- **소스맵** — 배포된 코드는 압축·난독화돼 있어 stack이 `a.js:1:38271`처럼 나온다. 빌드 때 소스맵을 Sentry에 업로드해두면 원본 파일·줄 번호로 복원해 보여준다. Next.js는 `next.config.ts`의 `withSentryConfig`가 처리한다
-- **release** — 배포 버전을 이벤트에 붙여 "어느 배포부터 났는지" 추적한다. 소스맵을 버전에 매칭하는 키이기도 하다. "Resolve in next release"도 이게 있어야 동작한다
-- **environment** — 이벤트에 붙는 환경 구분(local/dev/live 등). 검색·알림 필터로 사용한다. **64자 이내이고 공백·줄바꿈·슬래시와 문자열 `None` 을 못 쓴다**. 대소문자를 구분한다
+
+&nbsp;
+
+## 내가 알게 된거 
+
+> 너가 알아서 추가로 정리해줘
+
+```
+⏺ Sentry 알림 — 지금 이렇게 돼 있습니다
+
+구조
+
+Monitor   무엇을 이상으로 볼지 정한다     예) 5분에 5건 넘으면
+Alert     이상이 잡히면 어디로 보낸다     예) Slack #ishopcare_fe_alert + 메일
+
+둘은 따로입니다. Monitor만 있고 Alert에 연결이 안 되면 감지만 하고 조용합니다.
+
+있는 것
+
+Monitors (감지)
+  [I-Partners] Critical Error Rate   live · 5분 5건 · service:partners       연결 O
+  [Visit-Admin] Critical Error Rate  live · 5분 5건 · service:visit-admin    연결 X
+  Error Monitor                      에러 발생 자체                          연결 X
+
+Alerts (알림)
+  FE Alert    Slack #ishopcare_fe_alert + 승규님 메일 · live · 매번 알림
+
+어제 두 번 울렸습니다 — 오전 9:47, 오후 4:39. 둘 다 아이파트너스 5분에 7건.
+
+비어 있는 것
+
+최근 30일 live 에러 대비로 보면 이렇습니다.
+
+admin        1,697건    Monitor 없음      ← 제일 많은데 감지기가 없다
+partners     1,589건    O · 연결 O
+agency         726건    Monitor 없음
+visit-admin    179건    O · 연결 X        ← 감지해도 안 울린다
+
+할 것
+
+1. 어드민 Monitor 만들기 — [I-Partners]와 같은 설정에서 service:partners → service:admin
+2. 만든 뒤 FE Alert에 연결 — 이걸 빼먹으면 방문관리처럼 조용해집니다
+3. 방문관리도 연결 — Monitor는 이미 있으니 연결만 하면 됩니다
+4. agency는 정하기 — 726건인데 감지기가 없습니다. 담당이 다르면 채널도 달라질 수 있어 승규님 판단입니다
+5. Error Monitor는 그대로 둡니다 — 지금 연결하면 배포 직후 쏟아지는 새 이슈로 채널이 죽습니다. 목록이 안정되면 그때 연결
+
+알아두실 한계 하나
+
+어드민 저장 실패 500은 Sentry에 안 옵니다. shouldSkipReport가 버려서요. 그래서 어드민 Monitor를 만들어도 서버 장애를 반만 잡습니다 — 조회
+실패 500만 세어집니다.
+
+보류하신 500·401 결정이 여기서 값을 만듭니다. 500을 켜면 이 Monitor가 진짜 장애 감지기가 됩니다.
+```
+
